@@ -9,7 +9,7 @@ from flask_restful import Resource
 # Local imports
 from config import app, db, api
 # Add your model imports
-
+from models import db, User, Character, Campaign, CharacterCampaign
 
 # Views go here!
 
@@ -21,3 +21,7 @@ def index():
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
 
+class Users(Resource):
+    def get(self):
+        users = User.query.all()
+        return [user.serialize() for user in users]
