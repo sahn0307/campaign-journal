@@ -80,8 +80,7 @@ def get_all_by_condition(model, condition):
     # return result.scalars().all()
     return execute_query(select(model).where(condition)).all()
 
-
-#! before request - verify session login
+# ? before request - verify session login
 @app.before_request
 def load_logged_in_user():
     user_id = session.get("user_id")
@@ -89,7 +88,7 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = get_instance_by_id(User, user_id)
-
+    #! Refactor this, remove recipebyid + consider additional adds
     # path_dict = {"userbyid": User, "recipebyid": Recipe}
 
     # # If the current request's endpoint is in the dictionary
@@ -115,7 +114,7 @@ def load_logged_in_user():
     #     g.user = None
 
 
-# Base class for CRUD resource classes
+# ? Base class for CRUD resource classes
 class BaseResource(Resource):
     model = None
     schema = None
@@ -194,12 +193,7 @@ class BaseResource(Resource):
             db.session.rollback()
             return {"message": "Invalid data"}, 422
 
-
-class Users(Resource):
-    def get(self):
-        users = User.query.all()
-        return [user.serialize() for user in users]
-
+#? User Account Signup/Login/Logout/Session Resources
 class Signup(Resource):
     model = User
     schema = UserSchema()
@@ -222,8 +216,6 @@ class Signup(Resource):
         g.user = user
 
         return self.schema.dump(user), 201
-
-
 class CheckSession(Resource):
 
     def get(self):
@@ -238,7 +230,6 @@ class CheckSession(Resource):
             "bio": user.bio,
             "image_url": user.image_url,
         }, 200
-
 
 class Login(Resource):
     model = User
@@ -268,10 +259,42 @@ class Logout(Resource):
         return {}, 204
 
 
+class RecipeIndex(BaseResource):
+    model = Recipe
+    schema = RecipeSchema()
+
+    def get(self):
+        # if (user_id := session.get("user_id")) is None:
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().get(condition=Recipe.user_id == g.user.id)
+
+    def post(self):
+        # if (_ := session.get("user_id")) is None:
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().post()
+
+    def delete(self, id):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().delete(id)
+
+    def patch(self, id):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().patch(id)
+
+class Users(Resource):
+    def get(self):
+        users = User.query.all()
+        return [user.serialize() for user in users]
+
 api.add_resource(Signup, "/signup", endpoint="signup")
 api.add_resource(CheckSession, "/check_session", endpoint="check_session")
 api.add_resource(Login, "/login", endpoint="login")
 api.add_resource(Logout, "/logout", endpoint="logout")
+api.add_resource(RecipeIndex, "/recipes", endpoint="recipes")
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
