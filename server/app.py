@@ -259,31 +259,31 @@ class Logout(Resource):
         return {}, 204
 
 
-class RecipeIndex(BaseResource):
-    model = Recipe
-    schema = RecipeSchema()
+# class RecipeIndex(BaseResource):
+#     model = Recipe
+#     schema = RecipeSchema()
 
-    def get(self):
-        # if (user_id := session.get("user_id")) is None:
-        if g.user is None:
-            return {"message": "Unauthorized"}, 401
-        return super().get(condition=Recipe.user_id == g.user.id)
+#     def get(self):
+#         # if (user_id := session.get("user_id")) is None:
+#         if g.user is None:
+#             return {"message": "Unauthorized"}, 401
+#         return super().get(condition=Recipe.user_id == g.user.id)
 
-    def post(self):
-        # if (_ := session.get("user_id")) is None:
-        if g.user is None:
-            return {"message": "Unauthorized"}, 401
-        return super().post()
+#     def post(self):
+#         # if (_ := session.get("user_id")) is None:
+#         if g.user is None:
+#             return {"message": "Unauthorized"}, 401
+#         return super().post()
 
-    def delete(self, id):
-        if g.user is None:
-            return {"message": "Unauthorized"}, 401
-        return super().delete(id)
+#     def delete(self, id):
+#         if g.user is None:
+#             return {"message": "Unauthorized"}, 401
+#         return super().delete(id)
 
-    def patch(self, id):
-        if g.user is None:
-            return {"message": "Unauthorized"}, 401
-        return super().patch(id)
+#     def patch(self, id):
+#         if g.user is None:
+#             return {"message": "Unauthorized"}, 401
+#         return super().patch(id)
 
 class Users(Resource):
     def get(self):
@@ -294,7 +294,7 @@ api.add_resource(Signup, "/signup", endpoint="signup")
 api.add_resource(CheckSession, "/check_session", endpoint="check_session")
 api.add_resource(Login, "/login", endpoint="login")
 api.add_resource(Logout, "/logout", endpoint="logout")
-api.add_resource(RecipeIndex, "/recipes", endpoint="recipes")
+#api.add_resource(RecipeIndex, "/recipes", endpoint="recipes")
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
