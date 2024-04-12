@@ -1,5 +1,5 @@
 import React from "react";
-import App from "./components/App";
+import App from "./components/App2";
 import "./index.css";
 import { createRoot } from "react-dom/client";
 import { AuthProvider } from './context/AuthContext';

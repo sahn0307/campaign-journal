@@ -14,36 +14,36 @@ const routes = createBrowserRouter([
         path: '/',
         component: <Authentication />,
         //errorElement: <Error />,
-        // children: [
-        //     {
-        //         path: '/signup',
-        //         component: <SignUp />
-        //     },
-        //     {
-        //         path: '/login',
-        //         component: <Login />
-        //     },
-        //     {
-        //         path: '/characters',
-        //         component: <CharacterList />
-        //     },
-        //     {
-        //         path: '/characters/:id',
-        //         component: <CharacterDetail />
-        //     },
-        //     {
-        //         path: '/campaigns',
-        //         component: <CampaignList />
-        //     },
-        //     {
-        //         path: '/campaigns/:id',
-        //         component: <CampaignDetail />
-        //     },
-        //     {
-        //         path: '/profile',
-        //         component: <UserProfile />
-        //     }
-        // ]
+        children: [
+            {
+                path: '/signup',
+                component: <SignUp />
+            },
+            {
+                path: '/login',
+                component: <Login />
+            },
+            {
+                path: '/characters',
+                component: <CharacterList />
+            },
+            {
+                path: '/characters/:id',
+                component: <CharacterDetail />
+            },
+            {
+                path: '/campaigns',
+                component: <CampaignList />
+            },
+            {
+                path: '/campaigns/:id',
+                component: <CampaignDetail />
+            },
+            {
+                path: '/profile',
+                component: <UserProfile />
+            }
+        ]
     }
 ]);
 
