@@ -13,19 +13,19 @@ function Authentication({ updateUser }) {
   const handleClick = () => setSignUp((signUp) => !signUp);
 
   const formSchema = yup.object().shape({
-    name: yup.string().required("Please enter a user name"),
+    username: yup.string().required("Please enter a user name"),
     email: yup.string().email(),
   });
 
   const formik = useFormik({
     initialValues: {
-      name: '',
+      username: '',
       email: '',
-      password: '',
+      password_hash: '',
     },
     validationSchema: formSchema,
     onSubmit: (values) => {
-      fetch(signUp ? '/signup' : '/login', {
+      fetch(signUp ? '/api/v1/signup' : '/api/v1/login', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,9 +55,9 @@ function Authentication({ updateUser }) {
       <button onClick={handleClick}>{signUp ? 'Log In!' : 'Register now!'}</button>
       <Form onSubmit={formik.handleSubmit}>
         <label>Username</label>
-        <input type='text' name='name' value={formik.values.name} onChange={formik.handleChange} />
+        <input type='text' name='username' value={formik.values.username} onChange={formik.handleChange} />
         <label>Password</label>
-        <input type='password' name='password' value={formik.values.password} onChange={formik.handleChange} />
+        <input type='password' name='password_hash' value={formik.values.password_hash} onChange={formik.handleChange} />
         {signUp && (
           <>
             <label>Email</label>
