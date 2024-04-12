@@ -21,5 +21,5 @@ db.init_app(app)
 
 bcrypt = Bcrypt(app)
 
-api = Api(app)
+api = Api(app, prefix="/api/v1")
 
