@@ -5,7 +5,8 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import { useAuth } from '../context/AuthContext';
 
-function Authentication({ updateUser }) {
+function Authentication( ) {
+  const { updateUser } = useAuth()
   const [signUp, setSignUp] = useState(false);
   const [error, setError] = useState(false);
   const navigate = useNavigate();

@@ -272,11 +272,11 @@ class Logout(Resource):
 #     model = Recipe
 #     schema = RecipeSchema()
 
-#     def get(self):
-#         # if (user_id := session.get("user_id")) is None:
-#         if g.user is None:
-#             return {"message": "Unauthorized"}, 401
-#         return super().get(condition=Recipe.user_id == g.user.id)
+    # def get(self):
+        # if (user_id := session.get("user_id")) is None:
+        # if g.user is None:
+        #     return {"message": "Unauthorized"}, 401
+        # return super().get(condition=Recipe.user_id == g.user.id)
 
 #     def post(self):
 #         # if (_ := session.get("user_id")) is None:
