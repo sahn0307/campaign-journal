@@ -1,18 +1,22 @@
 //! this is index.js
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
-import  router  from './utils/routes.jsx'
-import AlbumsProvider from './context/AlbumsProvider.jsx'
-import './index.scss'
-import AuthProvider from './context/AuthProvider.jsx'
+import routes from './routes.js'
+//import './index.scss'
+import AuthProvider from './context/AuthProvider'
+import NavBar from './components/NavBar';
+import Footer from './components/Footer';
 
 const rootElement = document.getElementById('root')
 const root = createRoot(rootElement)
 
 root.render(
     <AuthProvider>
-        <AlbumsProvider>
-            <RouterProvider router={router} />
-        </AlbumsProvider>
+        <div>
+            <NavBar />
+            <RouterProvider router={routes} />
+            <Footer />
+        </div>
     </AuthProvider>
 )
+
