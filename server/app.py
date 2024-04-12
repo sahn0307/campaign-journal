@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from marshmallow import Schema, fields, validates, ValidationError, pre_load
 from marshmallow.validate import Length
-
+import ipdb
 
 # Local imports
 from config import app, db, api
@@ -205,7 +205,7 @@ class Signup(Resource):
         data = self.schema.load(data)
         if get_one_by_condition(User, User.username == data["username"]) is not None:
             return {"message": "User already exists"}, 422
-        password = data.pop("password")
+        password = data.pop("password_hash")
         user = User(**data)
         user.password_hash = password
         db.session.add(user)
@@ -237,6 +237,7 @@ class Login(Resource):
 
     def post(self):
         data = request.json
+        ipdb.set_trace()
         if not data or not data.get("username") or not data.get("password_hash"):
             return {"message": "Missing 'username' or 'password' in request data"}, 400
         data = self.schema.load(data)
@@ -288,12 +289,13 @@ class Logout(Resource):
 class Users(Resource):
     def get(self):
         users = User.query.all()
-        return [user.serialize() for user in users]
+        return [user.to_dict() for user in users]
 
 api.add_resource(Signup, "/signup", endpoint="signup")
 api.add_resource(CheckSession, "/check_session", endpoint="check_session")
 api.add_resource(Login, "/login", endpoint="login")
 api.add_resource(Logout, "/logout", endpoint="logout")
+api.add_resource(Users, "/users", endpoint="users")
 #api.add_resource(RecipeIndex, "/recipes", endpoint="recipes")
 
 if __name__ == '__main__':
