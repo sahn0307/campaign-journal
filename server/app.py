@@ -31,7 +31,7 @@ class UserSchema(Schema):
         validate=Length(min=2),
         metadata={"description": "The unique username of the user"},
     )
-    password = fields.Str(
+    password_hash = fields.Str(
         load_only=True,
         required=True,
         metadata={"description": "The password of the user"},
@@ -200,8 +200,8 @@ class Signup(Resource):
 
     def post(self):
         data = request.json
-        if not data or "username" not in data or "password" not in data:
-            return {"message": "Missing 'username' or 'password' in request data"}, 422
+        if not data or "username" not in data or "password_hash" not in data:
+            return {"message": "Missing 'username' or 'password_hash' in request data"}, 422
         data = self.schema.load(data)
         if get_one_by_condition(User, User.username == data["username"]) is not None:
             return {"message": "User already exists"}, 422
@@ -237,11 +237,11 @@ class Login(Resource):
 
     def post(self):
         data = request.json
-        if not data or not data.get("username") or not data.get("password"):
+        if not data or not data.get("username") or not data.get("password_hash"):
             return {"message": "Missing 'username' or 'password' in request data"}, 400
         data = self.schema.load(data)
         username = data.get("username")
-        password = data.get("password")
+        password = data.get("password_hash")
         user = get_one_by_condition(User, User.username == username)
         if user is None or not user.authenticate(password):
             return {"message": "Invalid credentials"}, 401

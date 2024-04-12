@@ -3,9 +3,9 @@ from config import db, bcrypt
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import validates
-#from sqlalchemy.sql.expression import text
+# from sqlalchemy.sql.expression import text
 
-db = SQLAlchemy()
+# db = SQLAlchemy()
 
 class User(db.Model, SerializerMixin):
     __tablename__ = "users"
@@ -16,15 +16,15 @@ class User(db.Model, SerializerMixin):
     _password_hash = db.Column(db.String(128))
     game_master = db.Column(db.Boolean, default=False)
 
-    serialize_rules = (
-        "-characters.user",
-        "-created_character_campaigns",
-        "-_password_hash",
+    characters = db.relationship("Character", back_populates="user")
+    character_campaigns = db.relationship(
+        "CharacterCampaign", back_populates="gamemaster"
     )
 
-    characters = db.relationship("Character", back_populates="user")
-    created_character_campaigns = db.relationship(
-        "CharacterCampaign", back_populates="gamemaster"
+    serialize_rules = (
+        "-characters.user",
+        "-character_campaigns",
+        "-_password_hash",
     )
     @hybrid_property
     def password_hash(self):
@@ -58,12 +58,10 @@ class Character(db.Model, SerializerMixin):
     description = db.Column(db.Text)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
+    user = db.relationship("User", back_populates="characters")
+    campaigns = db.relationship("CharacterCampaign", back_populates="character")
+
     serialize_rules = ("-user", "-campaigns.characters")
-
-    campaigns = db.relationship(
-        "Campaign", secondary="character_campaigns", back_populates="characters"
-    )
-
 class Campaign(db.Model, SerializerMixin):
     __tablename__ = "campaigns"
 
@@ -74,17 +72,16 @@ class Campaign(db.Model, SerializerMixin):
 
     serialize_rules = ("-characters.user", "-gamemaster._password_hash")
 
-    characters = db.relationship(
-        "Character", secondary="character_campaigns", back_populates="campaigns"
-    )
+    characters = db.relationship("CharacterCampaign", back_populates="campaign")
 
 class CharacterCampaign(db.Model):
     __tablename__ = "character_campaigns"
 
     character_id = db.Column(db.Integer, db.ForeignKey("characters.id"), primary_key=True)
     campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id"), primary_key=True)
-    character = db.relationship("Character", back_populates="campaigns")
     gamemaster_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    character = db.relationship("Character", back_populates="campaigns")
+    campaign = db.relationship("Campaign", back_populates="characters")
+    gamemaster = db.relationship("User", back_populates="character_campaigns")
 
-    #Quests?
-
+    # Quests?
