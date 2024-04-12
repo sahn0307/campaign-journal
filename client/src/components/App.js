@@ -4,20 +4,20 @@ import React, { useEffect, useState } from "react";
 import { RouterProvider } from 'react-router-dom'
 import routes from '../routes.js'
 //import './index.scss'
-import AuthProvider from '../context/AuthProvider'
+import { AuthProvider } from '../context/AuthContext';
 import NavBar from './NavBar';
 import Footer from './Footer';
 
 function App() {
   return (
     <div>
-      <AuthProvider>
       
-        <NavBar />
+      
+        
         <RouterProvider router={routes} />
-        <Footer />
       
-      </AuthProvider>
+      
+    
     </div>
   );
 }
