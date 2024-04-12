@@ -8,39 +8,42 @@ import CharacterDetail from './pages/CharacterDetail';
 import CampaignList from './pages/CampaignList';
 import CampaignDetail from './pages/CampaignDetail';
 import UserProfile from './pages/UserProfile';
-
+import Authentication from './pages/Authentication';
 const routes = createBrowserRouter([
     {
         path: '/',
-        component: <Home />,
-    },
-    {
-        path: '/signup',
-        component: <SignUp />
-    },
-    {
-        path: '/login',
-        component: <Login />
-    },
-    {
-        path: '/characters',
-        component: <CharacterList />
-    },
-    {
-        path: '/characters/:id',
-        component: <CharacterDetail />
-    },
-    {
-        path: '/campaigns',
-        component: <CampaignList />
-    },
-    {
-        path: '/campaigns/:id',
-        component: <CampaignDetail />
-    },
-    {
-        path: '/profile',
-        component: <UserProfile />
+        component: <Authentication />,
+        //errorElement: <Error />,
+        children: [
+            {
+                path: '/signup',
+                component: <SignUp />
+            },
+            {
+                path: '/login',
+                component: <Login />
+            },
+            {
+                path: '/characters',
+                component: <CharacterList />
+            },
+            {
+                path: '/characters/:id',
+                component: <CharacterDetail />
+            },
+            {
+                path: '/campaigns',
+                component: <CampaignList />
+            },
+            {
+                path: '/campaigns/:id',
+                component: <CampaignDetail />
+            },
+            {
+                path: '/profile',
+                component: <UserProfile />
+            }
+        ]
     }
 ]);
 
