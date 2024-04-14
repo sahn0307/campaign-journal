@@ -200,28 +200,28 @@ class Signup(Resource):
 
     def post(self):
         data = request.json
-        ipdb.set_trace()
+        
         if not data or "username" not in data or "password_hash" not in data:
             return {"message": "Missing 'username' or 'password_hash' in request data"}, 422
-        ipdb.set_trace()
+        
         data = self.schema.load(data)
-        ipdb.set_trace()
+        
         if get_one_by_condition(User, User.username == data["username"]) is not None:
             return {"message": "User already exists"}, 422
-        ipdb.set_trace()
+        
         password = data.pop("password_hash")
-        ipdb.set_trace()
+        
         user = User(**data)
         user.password_hash = password
-        ipdb.set_trace()
+        
         db.session.add(user)
-        ipdb.set_trace()
+        
         db.session.commit()
         # Log the user in
         session["user_id"] = user.id
         session["username"] = user.username
         g.user = user
-        ipdb.set_trace()
+        
 
         return self.schema.dump(user), 201
 class CheckSession(Resource):
@@ -245,7 +245,7 @@ class Login(Resource):
 
     def post(self):
         data = request.json
-        ipdb.set_trace()
+        
         if not data or not data.get("username") or not data.get("password_hash"):
             return {"message": "Missing 'username' or 'password' in request data"}, 400
         data = self.schema.load(data)

@@ -102,3 +102,4 @@ with app.app_context():
             )
     db.session.add_all(character_campaigns)
     db.session.commit()
+    print("Seeding Finished...")
