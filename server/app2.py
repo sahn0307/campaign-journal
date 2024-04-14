@@ -19,6 +19,7 @@ from marshmallow.validate import Length
 
 # Local imports
 from config import app, db, api
+
 # Add your model imports
 from models import db, User, Character, Campaign, CharacterCampaign
 
@@ -42,8 +43,14 @@ class UserSchema(Schema):
         required=True,
         metadata={"description": "The password of the user"},
     )
-    email = fields.Str(metadata={"description": "The email of the user"}) #! NEED REGEX! 
-    game_master = fields.Boolean(metadata={"description": "The option to determine if this user is a game master or not"})
+    email = fields.Str(
+        metadata={"description": "The email of the user"}
+    )  #! NEED REGEX!
+    game_master = fields.Boolean(
+        metadata={
+            "description": "The option to determine if this user is a game master or not"
+        }
+    )
 
     @validates("username")
     def validate_username(self, value):
@@ -60,12 +67,11 @@ class UserSchema(Schema):
             User, User.email == value
         ):
             raise ValidationError("Email already exists")
-    
+
     @validates_schema
     def validate_password(self, data, **kwargs):
-        if self.context.get('require_password') and 'password_hash' not in data:
-            raise ValidationError('Password is required', 'password_hash')
-
+        if self.context.get("require_password") and "password_hash" not in data:
+            raise ValidationError("Password is required", "password_hash")
 
     @pre_load
     def strip_strings(self, data, is_signup=None, **kwargs):
@@ -78,6 +84,7 @@ class UserSchema(Schema):
             if isinstance(value, str):
                 data[key] = value.strip()
         return data
+
 
 class CampaignSchema(Schema):
     id = fields.Int(dump_only=True)
@@ -109,6 +116,7 @@ class CampaignSchema(Schema):
                 data[key] = value.strip()
         return data
 
+
 class CharacterSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(
@@ -120,9 +128,15 @@ class CharacterSchema(Schema):
     race = fields.Str(metadata={"description": "The race of the character"})
     alignment = fields.Str(metadata={"description": "The alignment of the character"})
     age = fields.Int(metadata={"description": "The age of the character"})
-    alive = fields.Boolean(metadata={"description": "The alive status of the character"})
-    description = fields.Str(metadata={"description": "The description of the character"})
-    user_id = fields.Int(metadata={"description": "The user id associated with the character"})
+    alive = fields.Boolean(
+        metadata={"description": "The alive status of the character"}
+    )
+    description = fields.Str(
+        metadata={"description": "The description of the character"}
+    )
+    user_id = fields.Int(
+        metadata={"description": "The user id associated with the character"}
+    )
 
     @pre_load
     def strip_strings(self, data, **kwargs):
@@ -131,16 +145,20 @@ class CharacterSchema(Schema):
                 data[key] = value.strip()
         return data
 
+
 #! helpers
 def execute_query(query):
     return db.session.execute(query).scalars()
+
 
 def get_all(model):
     # return db.session.execute(select(model)).scalars().all()
     return execute_query(select(model)).all()
 
+
 def get_instance_by_id(model, id):
     return db.session.get(model, id)
+
 
 def get_one_by_condition(model, condition):
     # stmt = select(model).where(condition)
@@ -148,11 +166,13 @@ def get_one_by_condition(model, condition):
     # return result.scalars().first()
     return execute_query(select(model).where(condition)).first()
 
+
 def get_all_by_condition(model, condition):
     # stmt = select(model).where(condition)
     # result = db.session.execute(stmt)
     # return result.scalars().all()
     return execute_query(select(model).where(condition)).all()
+
 
 def get_current_user():
     user_id = session.get("user_id")
@@ -160,11 +180,13 @@ def get_current_user():
         return get_instance_by_id(User, user_id)
     return None
 
+
 def get_current_character():
     character_id = session.get("character_id")
     if character_id is not None:
         return get_instance_by_id(Character, character_id)
     return None
+
 
 def get_current_campaign():
     campaign_id = session.get("campaign_id")
@@ -308,6 +330,7 @@ class BaseResource(Resource):
             db.session.rollback()
             return {"message": "Invalid data"}, 422
 
+
 # ? User Account Signup/Login/Logout/Session Resources
 class Signup(Resource):
     model = User
@@ -336,6 +359,8 @@ class Signup(Resource):
         g.user = user
 
         return self.schema.dump(user), 201
+
+
 class CheckSession(Resource):
 
     def get(self):
@@ -350,6 +375,7 @@ class CheckSession(Resource):
             "bio": user.bio,
             "image_url": user.image_url,
         }, 200
+
 
 class Login(Resource):
     model = User
@@ -372,6 +398,7 @@ class Login(Resource):
         g.user = user
         return {"id": user.id, "username": user.username}, 200
 
+
 class Logout(Resource):
     def delete(self):
         if (user_id := session.get("user_id")) is None:
@@ -379,6 +406,7 @@ class Logout(Resource):
         session["user_id"] = None
         session["username"] = None
         return {}, 204
+
 
 class CharacterIndex(BaseResource):
     model = Character
@@ -405,6 +433,7 @@ class CharacterIndex(BaseResource):
             return {"message": "Unauthorized"}, 401
         self.schema.context = {"require_password": False}
         return super().patch(id)
+
 
 class UsersIndex(BaseResource):
     model = User
@@ -439,6 +468,7 @@ class UsersIndex(BaseResource):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
         return super().patch(g.user.id)
+
 
 class CampaignsIndex(BaseResource):
     model = Campaign
@@ -495,5 +525,5 @@ api.add_resource(
     CampaignsIndex, "/campaigns", "/campaigns/<int:campaign_id>", endpoint="campaigns"
 )
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(port=5555, debug=True)
