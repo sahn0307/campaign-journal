@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import styled from "styled-components";
 import { useFormik } from "formik";
 import * as yup from "yup";
@@ -7,33 +7,42 @@ import { useAuth } from '../context/AuthContext';
 import '../styles/Authentication.scss';
 
 
-function Authentication( ) {
-  const { updateUser } = useAuth()
-  const [signUp, setSignUp] = useState(false);
+function Authentication() {
+  const { user, updateUser } = useAuth()
+  const location = useLocation();
   const [error, setError] = useState(false);
+  const [formSchema, setFormSchema] = useState(null)
   const navigate = useNavigate();
-
-  const handleClick = () => setSignUp((signUp) => !signUp);
-
-  const formSchema = yup.object().shape({
-    username: yup.string().required("Please enter a user name"),
-    email: yup.string().email(),
-  });
+  
+  const signUp = location.pathname === '/signup';
+  
+  useEffect(() => {
+    setFormSchema(
+      yup.object().shape({
+        username: yup.string().required("Please enter a username"),
+        password_hash: yup.string().required("Please enter a password"),
+        email: signUp ? yup.string().email().required("Please enter an email") : yup.mixed().notRequired(),
+        isGameMaster: signUp ? yup.boolean() : yup.mixed().notRequired(),
+      })
+    );
+  }, [signUp]);
 
   const formik = useFormik({
     initialValues: {
       username: '',
       email: '',
       password_hash: '',
+      isGameMaster: false,
     },
     validationSchema: formSchema,
     onSubmit: (values) => {
+      const dataToSend = signUp ? values : { username: values.username, password_hash: values.password_hash };
       fetch(signUp ? '/api/v1/signup' : '/api/v1/login', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(dataToSend),
       })
         .then(res => {
           if (res.ok) {
@@ -49,15 +58,16 @@ function Authentication( ) {
     },
   });
 
+    if (user) {
+    return <h2>You are already signed in!</h2>;
+  }
+
   return (
     <div className="authentication">
-      <h2 className="error">{formik.errors.name}</h2>
+      {formik.errors.username && <h2 className="error">{formik.errors.username}</h2>}
+      {formik.errors.email && <h2 className="error">{formik.errors.email}</h2>}
+      {formik.errors.password_hash && <h2 className="error">{formik.errors.password_hash}</h2>}
       {error && <h2 className="error">{error}</h2>}
-      <h2>Please Log in or Sign up!</h2>
-      <h2>{signUp ? 'Already a member?' : 'Not a member?'}</h2>
-      <button className="toggle-button" onClick={handleClick}>
-        {signUp ? 'Log In!' : 'Register now!'}
-      </button>
       <form className="authentication-form" onSubmit={formik.handleSubmit}>
         <label>Username</label>
         <input type='text' name='username' value={formik.values.username} onChange={formik.handleChange} />
@@ -67,6 +77,8 @@ function Authentication( ) {
           <>
             <label>Email</label>
             <input type='text' name='email' value={formik.values.email} onChange={formik.handleChange} />
+            <label>Would you like to be a game master?</label>
+            <input type='checkbox' name='isGameMaster' checked={formik.values.isGameMaster} onChange={formik.handleChange} />
           </>
         )}
         <input type='submit' value={signUp ? 'Sign Up!' : 'Log In!'} />
