@@ -11,8 +11,18 @@ export const AuthProvider = ({ children }) => {
     setUser(user);
   };
 
+  const logout = () => {
+    fetch("/api/v1/logout", {method: "DELETE"})
+      .then(resp => {
+        if (resp.status === 204) {
+          updateUser(null)
+        }
+      })
+      .catch(err => console.log(err))
+  }
+
   return (
-    <AuthContext.Provider value={{ user, updateUser }}>
+    <AuthContext.Provider value={{ user, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   );
