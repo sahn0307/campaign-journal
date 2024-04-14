@@ -77,6 +77,23 @@ class CharacterSchema(Schema):
             if isinstance(value, str):
                 data[key] = value.strip()
         return data
+    
+class CampaignSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(
+        required=True,
+        validate=Length(min=2),
+        metadata={"description": "The unique name of the campaign"},
+    )
+    description = fields.Str(metadata={"description": "The description of the campaign"})
+    gamemaster_id = fields.Int(metadata={"description": "The gamemaster id associated with the campaign"})
+
+    @pre_load
+    def strip_strings(self, data, **kwargs):
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = value.strip()
+        return data
 
 
 #! helpers
@@ -315,6 +332,31 @@ class CharacterIndex(BaseResource):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
         return super().patch(id)
+    
+
+class CampaignIndex(BaseResource):
+    model = Campaign
+    schema = CampaignSchema()
+
+    def get(self):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().get(condition=Campaign.gamemaster_id == g.user.id)
+
+    def post(self):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().post()
+
+    def delete(self, id):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().delete(id)
+
+    def patch(self, id):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().patch(id)
 
 class UsersIndex(Resource):
     def get(self):
@@ -329,6 +371,6 @@ api.add_resource(Logout, "/logout", endpoint="logout")
 
 api.add_resource(UsersIndex, "/users", endpoint="users")
 api.add_resource(CharacterIndex, "/characters", endpoint="characters")
-
+api.add_resource(CampaignIndex, "/campaigns", endpoint="campaigns")
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
