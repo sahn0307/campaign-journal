@@ -1,12 +1,23 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
+import { getCharacters } from '../services/api';
 
-const Home = () => {
-   return (
-    <div>
-      <h1>Welcome!</h1>
-      <p>This is the Character page.</p>
-    </div>
-  )
+function CharacterList() {
+  const [characters, setCharacters] = useState([]);
+
+  useEffect(() => {
+    const fetchCharacters = async () => {
+      try {
+        const response = await getCharacters();
+        setCharacters(response.data);
+      } catch (error) {
+        console.error('Failed to fetch characters', error);
+      }
+    };
+
+    fetchCharacters();
+  }, []);
+
+  // ...
 }
 
-export default Home;
+export default CharacterList;

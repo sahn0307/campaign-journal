@@ -11,26 +11,33 @@ import UserProfile from '../pages/UserProfile';
 // import CampaignForm from '../pages/CampaignForm';
 import NavBar from './NavBar';
 import Footer from './Footer';
-
+import '../styles/style.scss';
+import { useState } from 'react';
 function App() {
-  return (
-    <Router>
-      <div className="App">
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/signup" element={<Authentication />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/characters" element={<CharacterList />} />
-          <Route path="/characters/:id" element={<CharacterDetail />} />
-          <Route path="/campaigns" element={<CampaignList />} />
-          <Route path="/campaigns/:id" element={<CampaignDetail />} />
-          <Route path="/profile" element={<UserProfile />} />
-        </Routes>
-        {/* <Footer /> */}
-      </div>
-    </Router>
-  );
-}
-
-export default App;
+    const [mode, setMode] = useState('light');
+  
+    const toggleMode = () => {
+      setMode(prevMode => (prevMode === 'light' ? 'dark' : 'light'));
+    };
+  
+    return (
+      <Router>
+        <div className={`App ${mode}-mode`}>
+          <NavBar mode={mode} toggleMode={toggleMode} />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/signup" element={<Authentication />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/characters" element={<CharacterList />} />
+            <Route path="/characters/:id" element={<CharacterDetail />} />
+            <Route path="/campaigns" element={<CampaignList />} />
+            <Route path="/campaigns/:id" element={<CampaignDetail />} />
+            <Route path="/profile" element={<UserProfile />} />
+          </Routes>
+          {/* <Footer /> */}
+        </div>
+      </Router>
+    );
+  }
+  
+  export default App;

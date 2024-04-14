@@ -4,6 +4,8 @@ import styled from "styled-components";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useAuth } from '../context/AuthContext';
+import '../styles/Authentication.scss';
+
 
 function Authentication( ) {
   const { updateUser } = useAuth()
@@ -48,13 +50,15 @@ function Authentication( ) {
   });
 
   return (
-    <>
-      <h2 style={{ color: 'red' }}>{formik.errors.name}</h2>
-      {error && <h2 style={{ color: 'red' }}>{error}</h2>}
+    <div className="authentication">
+      <h2 className="error">{formik.errors.name}</h2>
+      {error && <h2 className="error">{error}</h2>}
       <h2>Please Log in or Sign up!</h2>
       <h2>{signUp ? 'Already a member?' : 'Not a member?'}</h2>
-      <button onClick={handleClick}>{signUp ? 'Log In!' : 'Register now!'}</button>
-      <Form onSubmit={formik.handleSubmit}>
+      <button className="toggle-button" onClick={handleClick}>
+        {signUp ? 'Log In!' : 'Register now!'}
+      </button>
+      <form className="authentication-form" onSubmit={formik.handleSubmit}>
         <label>Username</label>
         <input type='text' name='username' value={formik.values.username} onChange={formik.handleChange} />
         <label>Password</label>
@@ -66,28 +70,28 @@ function Authentication( ) {
           </>
         )}
         <input type='submit' value={signUp ? 'Sign Up!' : 'Log In!'} />
-      </Form>
-    </>
+      </form>
+    </div>
   );
 }
 
 export default Authentication;
 
-export const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  width: 400px;
-  margin: auto;
-  font-family: Arial;
-  font-size: 30px;
+//export const Form = styled.form`
+//   display: flex;
+//   flex-direction: column;
+//   width: 400px;
+//   margin: auto;
+//   font-family: Arial;
+//   font-size: 30px;
 
-  input[type=submit] {
-    background-color: #42ddf5;
-    color: white;
-    height: 40px;
-    font-family: Arial;
-    font-size: 30px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-  }
-`;
+//   input[type=submit] {
+//     background-color: #42ddf5;
+//     color: white;
+//     height: 40px;
+//     font-family: Arial;
+//     font-size: 30px;
+//     margin-top: 10px;
+//     margin-bottom: 10px;
+//   }
+// `;
