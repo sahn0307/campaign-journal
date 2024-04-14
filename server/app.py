@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from marshmallow import Schema, fields, validates, ValidationError, pre_load
 from marshmallow.validate import Length
-from schemas import UserSchema, CharacterSchema, CampaignSchema#, CharacterCampaignSchema
+from schemas import UserSchema, CharacterSchema, CampaignSchema, UserUpdateSchema #, CharacterCampaignSchema
 # Local imports
 from config import app, db, api
 # Add your model imports
@@ -263,7 +263,7 @@ class CharacterIndex(BaseResource):
 
 class UsersIndex(BaseResource):
     model = User
-    schema = UserSchema()
+    schema = UserUpdateSchema()
 
     def get(self):
         # if (user_id := session.get("user_id")) is None:
@@ -290,9 +290,11 @@ class UsersIndex(BaseResource):
             user_id = g.user.id
         return super().delete(g.user.id)
 
-    def patch(self, id):
+    def patch(self, user_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
+        if user_id is None:
+            user_id = g.user.id
         return super().patch(g.user.id)
 
 class CampaignsIndex(BaseResource):

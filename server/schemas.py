@@ -45,6 +45,45 @@ class UserSchema(Schema):
             if isinstance(value, str):
                 data[key] = value.strip()
         return data
+    
+
+class UserUpdateSchema(Schema):
+    id = fields.Int(dump_only=True)
+    username = fields.Str(
+        required=True,
+        validate=Length(min=2),
+        metadata={"description": "The unique username of the user"},
+    )
+    email = fields.Str(metadata={"description": "The email of the user"}) #! NEED REGEX! 
+    game_master = fields.Boolean(metadata={"description": "The option to determine if this user is a game master or not"})
+
+    @validates("username")
+    def validate_username(self, value):
+        if self.context.get("is_signup"):
+            if get_one_by_condition(User, User.username == value):
+                raise ValidationError("Username already exists")
+        else:  # This is the login case
+            if not get_one_by_condition(User, User.username == value):
+                raise ValidationError("Username does not exist")
+
+    @validates("email")
+    def validate_email(self, value):
+        if self.context.get("is_signup") and get_one_by_condition(
+            User, User.email == value
+        ):
+            raise ValidationError("Email already exists")
+
+    @pre_load
+    def strip_strings(self, data, is_signup=None, **kwargs):
+        extra_data = kwargs.get("extra_data")
+        print(f"Extra data: {extra_data}")
+        #! example use of kwags:
+        #! user_schema.load(data, extra_data="extra")
+        #! can do something with this like logging or tracking things
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = value.strip()
+        return data
 
 class CampaignSchema(Schema):
     id = fields.Int(dump_only=True)
