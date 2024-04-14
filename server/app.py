@@ -56,6 +56,28 @@ class UserSchema(Schema):
                 data[key] = value.strip()
         return data
 
+class CharacterSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(
+        required=True,
+        validate=Length(min=2),
+        metadata={"description": "The unique name of the character"},
+    )
+    class_ = fields.Str(metadata={"description": "The class of the character"})
+    race = fields.Str(metadata={"description": "The race of the character"})
+    alignment = fields.Str(metadata={"description": "The alignment of the character"})
+    age = fields.Int(metadata={"description": "The age of the character"})
+    alive = fields.Boolean(metadata={"description": "The alive status of the character"})
+    description = fields.Str(metadata={"description": "The description of the character"})
+    user_id = fields.Int(metadata={"description": "The user id associated with the character"})
+
+    @pre_load
+    def strip_strings(self, data, **kwargs):
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = value.strip()
+        return data
+
 
 #! helpers
 def execute_query(query):
@@ -268,33 +290,33 @@ class Logout(Resource):
         return {}, 204
 
 
-# class RecipeIndex(BaseResource):
-#     model = Recipe
-#     schema = RecipeSchema()
+class CharacterIndex(BaseResource):
+    model = Character
+    schema = CharacterSchema()
 
-    # def get(self):
+    def get(self):
         # if (user_id := session.get("user_id")) is None:
-        # if g.user is None:
-        #     return {"message": "Unauthorized"}, 401
-        # return super().get(condition=Recipe.user_id == g.user.id)
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().get(condition=Character.user_id == g.user.id)
 
-#     def post(self):
-#         # if (_ := session.get("user_id")) is None:
-#         if g.user is None:
-#             return {"message": "Unauthorized"}, 401
-#         return super().post()
+    def post(self):
+        # if (_ := session.get("user_id")) is None:
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().post()
 
-#     def delete(self, id):
-#         if g.user is None:
-#             return {"message": "Unauthorized"}, 401
-#         return super().delete(id)
+    def delete(self, id):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().delete(id)
 
-#     def patch(self, id):
-#         if g.user is None:
-#             return {"message": "Unauthorized"}, 401
-#         return super().patch(id)
+    def patch(self, id):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().patch(id)
 
-class Users(Resource):
+class UsersIndex(Resource):
     def get(self):
         users = User.query.all()
         return [user.to_dict() for user in users]
@@ -303,8 +325,10 @@ api.add_resource(Signup, "/signup", endpoint="signup")
 api.add_resource(CheckSession, "/check_session", endpoint="check_session")
 api.add_resource(Login, "/login", endpoint="login")
 api.add_resource(Logout, "/logout", endpoint="logout")
-api.add_resource(Users, "/users", endpoint="users")
-# api.add_resource(RecipeIndex, "/recipes", endpoint="recipes")
+
+
+api.add_resource(UsersIndex, "/users", endpoint="users")
+api.add_resource(CharacterIndex, "/characters", endpoint="characters")
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
