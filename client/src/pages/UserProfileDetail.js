@@ -10,7 +10,6 @@ const UserProfileDetail = ({ id, username, email, game_master, handlePatchUser, 
         <span>Username: {username}</span>
         <span>Email: {email}</span>
         <span>{`game_master: ${game_master}`}</span>
-            <button onClick={() => handlePatchUser(id)}>Update</button>
             <button onClick={() => handleDeleteUser(id)}>Delete</button>
         </li>
     )
