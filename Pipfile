@@ -18,7 +18,7 @@ flask-bcrypt = "1.0.1"
 marshmallow = "*"
 flask-marshmallow = "*"
 ipdb = "*"
+python-dotenv = "*"
 
 [requires]
 python_full_version = "3.8.13"
-
