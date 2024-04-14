@@ -9,6 +9,7 @@ import CampaignDetail from '../pages/CampaignDetail';
 import UserProfileList from '../pages/UserProfileList'
 import UserProvider from '../context/UserProvider';
 import { useState, useEffect } from 'react';
+import CampaignProvider from '../context/CampaignProvider';
 
 function AppRoutes() {
   const [currentPage, setCurrentPage] = useState('');
@@ -31,8 +32,16 @@ function AppRoutes() {
       <Route path="/login" element={<Authentication />} />
       <Route path="/characters" element={<CharacterList />} />
       <Route path="/characters/:id" element={<CharacterDetail />} />
-      <Route path="/campaigns" element={<CampaignList />} />
-      <Route path="/campaigns/:id" element={<CampaignDetail />} />
+      <Route path="/campaigns" element={
+        <CampaignProvider>
+          <CampaignList />
+        </CampaignProvider>
+      } />
+      <Route path="/campaigns/:id" element={
+        <CampaignProvider>
+          <CampaignDetail />
+        </CampaignProvider>
+      } />
       <Route path="/profile/" element={
         <UserProvider>
           <UserProfileList />
