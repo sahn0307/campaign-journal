@@ -9,7 +9,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from marshmallow import Schema, fields, validates, ValidationError, pre_load
 from marshmallow.validate import Length
-import ipdb
 
 # Local imports
 from config import app, db, api
@@ -39,13 +38,24 @@ class UserSchema(Schema):
     email = fields.Str(metadata={"description": "The email of the user"}) #! NEED REGEX! 
     game_master = fields.Boolean(metadata={"description": "The option to determine if this user is a game master or not"})
 
-    # @validates("username") #! Is this duplicating line 30?
-    # def validate_username(self, username):
-    #     if len(username) < 2:
-    #         raise ValidationError("Username must contain at least two characters")
+    @validates("username")
+    def validate_username(self, value):
+        if self.context.get("is_signup"):
+            if get_one_by_condition(User, User.username == value):
+                raise ValidationError("Username already exists")
+        else:  # This is the login case
+            if not get_one_by_condition(User, User.username == value):
+                raise ValidationError("Username does not exist")
+
+    @validates("email")
+    def validate_email(self, value):
+        if self.context.get("is_signup") and get_one_by_condition(
+            User, User.email == value
+        ):
+            raise ValidationError("Email already exists")
 
     @pre_load
-    def strip_strings(self, data, **kwargs):
+    def strip_strings(self, data, is_signup=None, **kwargs):
         extra_data = kwargs.get("extra_data")
         print(f"Extra data: {extra_data}")
         #! example use of kwags:
@@ -55,6 +65,37 @@ class UserSchema(Schema):
             if isinstance(value, str):
                 data[key] = value.strip()
         return data
+
+class CampaignSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(
+        required=True,
+        validate=Length(min=2),
+        metadata={"description": "The unique name of the campaign"},
+    )
+    description = fields.Str(
+        metadata={"description": "The description of the campaign"}
+    )
+    gamemaster_id = fields.Int(
+        metadata={"description": "The ID of the game master of the campaign"}
+    )
+
+    @validates("name")
+    def validate_name(self, value):
+        if self.context.get("is_create"):
+            if get_one_by_condition(Campaign, Campaign.name == value):
+                raise ValidationError("Campaign name already exists")
+        else:  # This is the update case
+            if not get_one_by_condition(Campaign, Campaign.name == value):
+                raise ValidationError("Campaign name does not exist")
+
+    @pre_load
+    def strip_strings(self, data, **kwargs):
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = value.strip()
+        return data
+
 
 class CharacterSchema(Schema):
     id = fields.Int(dump_only=True)
@@ -77,7 +118,6 @@ class CharacterSchema(Schema):
             if isinstance(value, str):
                 data[key] = value.strip()
         return data
-
 
 #! helpers
 def execute_query(query):
@@ -222,28 +262,25 @@ class Signup(Resource):
 
     def post(self):
         data = request.json
-        
-        if not data or "username" not in data or "password_hash" not in data:
-            return {"message": "Missing 'username' or 'password_hash' in request data"}, 422
-        
-        data = self.schema.load(data)
-        
-        if get_one_by_condition(User, User.username == data["username"]) is not None:
-            return {"message": "User already exists"}, 422
-        
+        self.schema.context = {"is_signup": True}
+
+        try:
+            data = self.schema.load(data)
+        except ValidationError as err:
+            return err.messages, 422
+
         password = data.pop("password_hash")
-        
+
         user = User(**data)
         user.password_hash = password
-        
+
         db.session.add(user)
-        
+
         db.session.commit()
         # Log the user in
         session["user_id"] = user.id
         session["username"] = user.username
         g.user = user
-        
 
         return self.schema.dump(user), 201
 class CheckSession(Resource):
@@ -267,9 +304,10 @@ class Login(Resource):
 
     def post(self):
         data = request.json
-        
-        if not data or not data.get("username") or not data.get("password_hash"):
-            return {"message": "Missing 'username' or 'password' in request data"}, 400
+        try:
+            data = self.schema.load(data)
+        except ValidationError as err:
+            return err.messages, 422
         data = self.schema.load(data)
         username = data.get("username")
         password = data.get("password_hash")
@@ -288,7 +326,6 @@ class Logout(Resource):
         session["user_id"] = None
         session["username"] = None
         return {}, 204
-
 
 class CharacterIndex(BaseResource):
     model = Character
@@ -316,10 +353,80 @@ class CharacterIndex(BaseResource):
             return {"message": "Unauthorized"}, 401
         return super().patch(id)
 
-class UsersIndex(Resource):
+
+class UsersIndex(BaseResource):
+    model = User
+    schema = UserSchema()
+
     def get(self):
-        users = User.query.all()
-        return [user.to_dict() for user in users]
+        # if (user_id := session.get("user_id")) is None:
+        # if user_id is None:
+        #     if g.user is None:
+        #         return {"message": "Unauthorized"}, 401
+        #     user_id = g.user.id
+
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        # id = g.user.id
+        return super().get(condition=(User.id == g.user.id))
+
+    # def post(self):
+    #     # if (_ := session.get("user_id")) is None:
+    #     if g.user is None:
+    #         return {"message": "Unauthorized"}, 401
+    #     return super().post()
+
+    def delete(self, user_id=None):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        if user_id is None:
+            user_id = g.user.id
+        return super().delete(g.user.id)
+
+    def patch(self, id):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().patch(g.user.id)
+
+class CampaignsIndex(BaseResource):
+    model = Campaign
+    schema = CampaignSchema()
+
+    def get(self, campaign_id=None):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        if campaign_id is None:
+            campaign_id = g.user.id
+        return super().get(condition=(Campaign.id == campaign_id))
+
+    def delete(self, campaign_id=None):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        if campaign_id is None:
+            campaign_id = g.user.id
+
+        # Get the campaign
+        campaign = Campaign.query.get(campaign_id)
+
+        # Check if the campaign exists
+        if not campaign:
+            return {"message": "Campaign not found"}, 404
+
+        # Delete or reassign all CharacterCampaign instances that reference the campaign
+        for cc in campaign.characters:
+            db.session.delete(cc)
+
+        # Commit the changes
+        db.session.commit()
+
+        # Now you can delete the campaign
+        return super().delete(campaign_id)
+
+    def patch(self, campaign_id):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        return super().patch(campaign_id)
+
 
 api.add_resource(Signup, "/signup", endpoint="signup")
 api.add_resource(CheckSession, "/check_session", endpoint="check_session")
@@ -327,8 +434,11 @@ api.add_resource(Login, "/login", endpoint="login")
 api.add_resource(Logout, "/logout", endpoint="logout")
 
 
-api.add_resource(UsersIndex, "/users", endpoint="users")
+api.add_resource(UsersIndex, "/profile", "/profile/<int:user_id>", endpoint="profile")
 api.add_resource(CharacterIndex, "/characters", endpoint="characters")
+api.add_resource(
+    CampaignsIndex, "/campaigns", "/campaigns/<int:campaign_id>", endpoint="campaigns"
+)
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
