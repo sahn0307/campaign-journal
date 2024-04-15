@@ -55,21 +55,24 @@ const UserProfileDetail = ({ user, handlePatchUser, handleDeleteUser }) => {
   };
 
   return (
-    <li className="user-profile-detail" key={user.id}>
+    <div className="user-profile" key={user.id}>
       {!isEditMode ? (
-        <div className="user-info">
-          <div className="user-info-item">
+        <div className="profile-info">
+         <h1>
+            Profile
+         </h1>
+          <p>
             <span className="label">Username: </span>
-            <span className="value">{user.username} </span>
-          </div>
-          <div className="user-info-item">
+            <span className="value">{user.username}</span>
+          </p>
+          <p>
             <span className="label">Email: </span>
-            <span className="value">{user.email} </span>
-          </div>
-          <div className="user-info-item">
+            <span className="value">{user.email}</span>
+          </p>
+          <p>
             <span className="label">Game Master: </span>
             <span className="value">{user.game_master ? 'Yes' : 'No'}</span>
-          </div>
+          </p>
           <div className="button-group">
             <button className="edit-button" onClick={() => setIsEditMode(true)}>
               Edit
@@ -82,26 +85,11 @@ const UserProfileDetail = ({ user, handlePatchUser, handleDeleteUser }) => {
       ) : (
         <form onSubmit={formik.handleSubmit}>
           <label>Username</label>
-          <input
-            type="text"
-            name="username"
-            value={formik.values.username}
-            onChange={formik.handleChange}
-          />
+          <input type="text" name="username" value={formik.values.username} onChange={formik.handleChange} />
           <label>Email</label>
-          <input
-            type="text"
-            name="email"
-            value={formik.values.email}
-            onChange={formik.handleChange}
-          />
+          <input type="text" name="email" value={formik.values.email} onChange={formik.handleChange} />
           <label>Game Master</label>
-          <input
-            type="checkbox"
-            name="game_master"
-            checked={formik.values.game_master}
-            onChange={formik.handleChange}
-          />
+          <input type="checkbox" name="game_master" checked={formik.values.game_master} onChange={formik.handleChange} />
           <button type="submit">Save</button>
           <button type="button" onClick={() => setIsEditMode(false)}>
             Cancel
@@ -109,7 +97,7 @@ const UserProfileDetail = ({ user, handlePatchUser, handleDeleteUser }) => {
         </form>
       )}
       <ToastContainer />
-    </li>
+    </div>
   );
 };
 

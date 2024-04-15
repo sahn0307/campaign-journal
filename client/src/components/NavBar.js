@@ -38,11 +38,11 @@ function NavBar({ mode, toggleMode }) {
             </li>
           </>
         )}
-        <li className="NavBar__item">
+        {/* <li className="NavBar__item">
           <button className="NavBar__toggle" onClick={toggleMode}>
             {mode === 'light' ? 'Toggle Dark Mode' : 'Toggle Light Mode'}
           </button>
-        </li>
+        </li> */}
       </ul>
     </nav>
   )
