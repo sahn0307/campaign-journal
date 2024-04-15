@@ -1,22 +1,12 @@
-import React, { useState } from 'react'
-import CampaignDetailForm from '../components/CampaignDetailForm'
+import React from 'react'
 
 
-const CampaignDetail = ({ id, name, description, characters , handleDeleteCampaign}) => {
-    const [showForm, setShowForm] = useState(false)
-    const [isCreating, setIsCreating] = useState(false)
+const CampaignDetail = ({ id, name, description, characters , handleDeleteCampaign, startUpdate}) => {
 
 
-    const campaign = { id, name, description, characters }
-    const startUpdate = () => {
-        setShowForm(true);
-        setIsCreating(false);
-    }
 
-    const startCreate = () => {
-        setShowForm(true);
-        setIsCreating(true);
-    }
+    // const campaign = { id, name, description, characters }
+
 
     return (
         <li>
@@ -26,9 +16,7 @@ const CampaignDetail = ({ id, name, description, characters , handleDeleteCampai
                 {characters.map(characterCampaign => characterCampaign.character).join(', ')}
             </span>
             <button onClick={startUpdate}>Update</button>
-            <button onClick={() => handleDeleteCampaign(id)}>Delete</button>
-            <button onClick={startCreate}>Create New Campaign</button>
-            {showForm && <CampaignDetailForm campaign={isCreating ? null : campaign}/>}
+            <button onClick={() => handleDeleteCampaign(id)}>Delete</button>           
         </li>
     )
 }
