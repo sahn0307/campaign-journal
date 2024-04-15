@@ -74,7 +74,7 @@ const UserProfileDetail = ({ user, handlePatchUser, handleDeleteUser }) => {
             <button className="edit-button" onClick={() => setIsEditMode(true)}>
               Edit
             </button>
-            <button className="delete-button" onClick={handleDelete}>
+            <button className="edit-button" onClick={handleDelete}>
               Delete
             </button>
           </div>
@@ -113,4 +113,4 @@ const UserProfileDetail = ({ user, handlePatchUser, handleDeleteUser }) => {
   );
 };
 
-export default UserProfileDetail
+export default UserProfileDetail;

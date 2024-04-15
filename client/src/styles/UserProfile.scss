@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap');
+
+$primary-color: #8e7cc3;
+$secondary-color: #c6b6e2;
+$background-color: #1c1c1c;
+$text-color: #fff;
+$button-color: #4b3e8f;
+$button-hover-color: #372d6b;
+
+.user-profile-container {
+  background-color: $background-color;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-profile {
+  background-color: $primary-color;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 100%;
+  font-family: 'Cinzel Decorative', cursive;
+  color: $text-color;
+
+  h1 {
+    font-size: 32px;
+    margin-bottom: 20px;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+  }
+
+  .profile-info {
+    margin-bottom: 20px;
+
+    p {
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+  }
+
+  .edit-button {
+    background-color: $button-color;
+    color: $text-color;
+    border: none;
+    padding: 12px 24px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 5px;
+    display: block;
+    margin: 0 auto;
+
+    &:hover {
+      background-color: $button-hover-color;
+    }
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+
+    label {
+      margin-bottom: 10px;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    input[type='text'],
+    input[type='checkbox'] {
+      padding: 12px;
+      font-size: 18px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: $secondary-color;
+      color: $text-color;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      border-radius: 5px;
+      border: none;
+      margin-bottom: 10px;
+      color: $text-color;
+
+      &[type='submit'] {
+        background-color: $button-color;
+
+        &:hover {
+          background-color: $button-hover-color;
+        }
+      }
+
+      &[type='button'] {
+        background-color: $secondary-color;
+
+        &:hover {
+          background-color: darken($secondary-color, 10%);
+        }
+      }
+    }
+  }
+}
+
+.toast-container {
+  font-size: 16px;
+}
