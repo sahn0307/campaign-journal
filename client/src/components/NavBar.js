@@ -12,19 +12,22 @@ function NavBar({ mode, toggleMode }) {
         <li className="NavBar__item">
           <Link to="/" className="NavBar__link">Home</Link>
         </li>
-        <li className="NavBar__item">
-          <Link to="/characters" className="NavBar__link">Characters</Link>
-        </li>
-        <li className="NavBar__item">
-          <Link to="/campaigns" className="NavBar__link">Campaigns</Link>
-        </li>
-        <li className="NavBar__item">
-          <Link to="/profile" className="NavBar__link">Profile</Link>
-        </li>
+        
         {user ? (
+          <>
+          <li className="NavBar__item">
+            <Link to="/characters" className="NavBar__link">Characters</Link>
+          </li>
+          <li className="NavBar__item">
+            <Link to="/campaigns" className="NavBar__link">Campaigns</Link>
+          </li>
+          <li className="NavBar__item">
+            <Link to="/profile" className="NavBar__link">Profile</Link>
+          </li>
           <li className="NavBar__item">
             <button onClick={() => logout()} className="NavBar__link">Logout</button>
           </li>
+          </>
         ) : (
           <>
             <li className="NavBar__item">
