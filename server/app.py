@@ -309,11 +309,8 @@ class UsersIndex(BaseResource):
         return super().delete(g.user.id)
 
     def patch(self, user_id=None):
-    def patch(self, user_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        if user_id is None:
-            user_id = g.user.id
         if user_id is None:
             user_id = g.user.id
         return super().patch(g.user.id)
