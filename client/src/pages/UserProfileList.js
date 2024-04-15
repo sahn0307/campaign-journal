@@ -1,14 +1,14 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { useUsers } from '../context/UserProvider';
-import UserProfileDetail from './UserProfileDetail';
-import UserProfileForm from '../components/UserProfileForm';
-import { useAuth } from '../context/AuthContext';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useMemo, useState, useEffect } from 'react'
+import { useUsers } from '../context/UserProvider'
+import UserProfileDetail from './UserProfileDetail'
+import UserProfileForm from '../components/UserProfileForm'
+import { useAuth } from '../context/AuthContext'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const UserProfileList = () => {
-const { users, handlePatchUser, handleDeleteUser, currentPage } = useUsers();
-const { user } = useAuth();
+const { users, handlePatchUser, handleDeleteUser, currentPage } = useUsers()
+const { user } = useAuth()
 
 const userList = useMemo(() => {
   if (Array.isArray(users)) {
@@ -19,15 +19,15 @@ const userList = useMemo(() => {
       handlePatchUser={handlePatchUser}
       handleDeleteUser={handleDeleteUser}
       />
-    ));
+    ))
   } else {
-    console.error('Users is not an array:', users);
-    return null;
+    console.error('Users is not an array:', users)
+    return null
   }
-}, [users, handlePatchUser, handleDeleteUser]);
+}, [users, handlePatchUser, handleDeleteUser])
 
   if (!currentPage) {
-    return null;
+    return null
   }
   
   return (
@@ -42,7 +42,7 @@ const userList = useMemo(() => {
       )}
       <ToastContainer />
     </div>
-  );
-};
+  )
+}
 
-export default UserProfileList;
+export default UserProfileList

@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useFormik } from 'formik';
-import * as yup from 'yup';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useState, useEffect } from 'react'
+import { useFormik } from 'formik'
+import * as yup from 'yup'
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import styled from 'styled-components'
 
 const UserProfileForm = ({ user, handlePatchUser }) => {
-    const [formSchema, setFormSchema] = useState(null);
+    const [formSchema, setFormSchema] = useState(null)
 
     useEffect(() => {
     setFormSchema(
@@ -15,8 +15,8 @@ const UserProfileForm = ({ user, handlePatchUser }) => {
         email: yup.string().email().required('Please enter an email'),
         game_master: yup.boolean(),
         })
-    );
-    }, []);
+    )
+    }, [])
 
     const formik = useFormik({
     initialValues: {
@@ -28,22 +28,22 @@ const UserProfileForm = ({ user, handlePatchUser }) => {
     onSubmit: (values) => {
         handlePatchUser(user.id, values)
         .then(() => {
-            toast.success('Profile updated successfully');
+            toast.success('Profile updated successfully')
         })
         .catch((error) => {
             if (typeof error.message === 'string') {
-            toast.error(error.message);
+            toast.error(error.message)
             } else if (typeof error === 'object' && error !== null) {
             for (let field in error) {
                 error[field].forEach((message) => {
-                toast.error(`${field}: ${message}`);
-                });
+                toast.error(`${field}: ${message}`)
+                })
             }
             }
-        });
+        })
     },
     enableReinitialize: true,
-    });
+    })
 
     return (
     <Form onSubmit={formik.handleSubmit}>
@@ -70,25 +70,25 @@ const UserProfileForm = ({ user, handlePatchUser }) => {
         />
         <button type="submit">Update Profile</button>
     </Form>
-    );
-    };
+    )
+    }
 
-export default UserProfileForm;
+export default UserProfileForm
     
 const Form = styled.form`
-    display:flex;
-    flex-direction:column;
-    width: 400px;
-    margin:auto;
-    font-family:Arial;
-    font-size:30px;
+    display:flex
+    flex-direction:column
+    width: 400px
+    margin:auto
+    font-family:Arial
+    font-size:30px
     input[type=submit]{
-      background-color:#42ddf5;
-      color: white;
-      height:40px;
-      font-family:Arial;
-      font-size:30px;
-      margin-top:10px;
-      margin-bottom:10px;
+      background-color:#42ddf5
+      color: white
+      height:40px
+      font-family:Arial
+      font-size:30px
+      margin-top:10px
+      margin-bottom:10px
     }
   `

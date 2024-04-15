@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react'
 import { useFetchJSON } from '../utils/helpers'
-import { useAuth } from './AuthContext';
-import { useLocation } from 'react-router-dom';
+import { useAuth } from './AuthContext'
+import { useLocation } from 'react-router-dom'
 
 const UsersContext = createContext()
 
@@ -22,7 +22,7 @@ const UserProvider = ({ children }) => {
                     const data = await res.json()
                     if (Array.isArray(data)) { // ensure data is an array
                         setUsers(data)
-                        console.log('Data from API:', data);
+                        console.log('Data from API:', data)
                     } else {
                         console.error('Data is not an array:', data)
                     }
@@ -64,7 +64,7 @@ const UserProvider = ({ children }) => {
             const resp = await deleteJSON(`/api/v1/${currentPage}/${id}`)
             if (resp.status === 204) {
                 console.log('User deleted successfully')
-                logout();
+                logout()
             }
         } catch (err) {
             console.log(err)
@@ -79,4 +79,4 @@ const UserProvider = ({ children }) => {
     )
 }
 
-export default UserProvider;
+export default UserProvider

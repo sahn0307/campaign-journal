@@ -1,15 +1,15 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext } from 'react'
 
-const AuthContext = createContext();
+const AuthContext = createContext()
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext)
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null)
 
   const updateUser = (user) => {
-    setUser(user);
-  };
+    setUser(user)
+  }
 
   const logout = () => {
     fetch("/api/v1/logout", {method: "DELETE"})
@@ -25,5 +25,5 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{ user, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
-  );
+  )
 }

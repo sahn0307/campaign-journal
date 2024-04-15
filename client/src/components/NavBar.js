@@ -1,7 +1,7 @@
-import React from "react";
-import { Link , useNavigate} from "react-router-dom";
-import '../styles/nav.scss';
-import { useAuth } from '../context/AuthContext';
+import React from "react"
+import { Link , useNavigate} from "react-router-dom"
+import '../styles/nav.scss'
+import { useAuth } from '../context/AuthContext'
 
 function NavBar({ mode, toggleMode }) {
   const { user, updateUser, logout } = useAuth()
@@ -42,7 +42,7 @@ function NavBar({ mode, toggleMode }) {
         </li>
       </ul>
     </nav>
-  );
+  )
 }
 
-export default NavBar;
+export default NavBar
