@@ -15,7 +15,7 @@ export const useFetchJSON = () => {
             if (!res.ok) {
                 throw new Error('Request Failed: status: ' + res.status)
             }
-            return res.status === 204 ? res : await res.json()
+            return res
         } 
         catch (error) {
             throw new Error('Failed to Fetch: Is the server running?')
