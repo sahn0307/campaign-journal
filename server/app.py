@@ -325,7 +325,7 @@ class CampaignsIndex(BaseResource):
             return {"message": "Unauthorized"}, 401
         if campaign_id is None:
             campaign_id = g.user.id
-        return super().get(condition=(Campaign.id == campaign_id))
+        return super().get(condition=(Campaign.gamemaster_id == g.user.id))
 
     def delete(self, campaign_id=None):
         if g.user is None:

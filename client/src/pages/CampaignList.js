@@ -7,17 +7,18 @@ const CampaignList = () => {
     const { campaigns, handlePatchCampaign, handleDeleteCampaign, currentPage } = useCampaigns();
     const { user } = useAuth();
     console.log('Current page:', currentPage);
+    console.log(campaigns)
 
     const campaignList = useMemo(() => {
         if (Array.isArray(campaigns)) {
-            return campaigns.map(campaign => (
-                <CampaignDetail 
-                    key={campaign.id} 
-                    {...campaign}
-                    handlePatchCampaign={handlePatchCampaign} 
-                    handleDeleteCampaign={handleDeleteCampaign} 
-                />
-            ));
+          return campaigns.map(campaign => (
+              <CampaignDetail 
+                  key={campaign.id} 
+                  {...campaign}
+                  handlePatchCampaign={handlePatchCampaign} 
+                  handleDeleteCampaign={handleDeleteCampaign} 
+              />
+          ));
         } else {
             console.error('Campaigns is not an array:', campaigns);
             return null;
