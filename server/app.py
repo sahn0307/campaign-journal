@@ -12,6 +12,7 @@ from marshmallow.validate import Length
 from schemas import UserSchema, CharacterSchema, CampaignSchema, UserUpdateSchema #, CharacterCampaignSchema
 # Local imports
 from config import app, db, api
+
 # Add your model imports
 from models import db, User, Character, Campaign, CharacterCampaign
 import ipdb
@@ -27,12 +28,15 @@ import ipdb
 def execute_query(query):
     return db.session.execute(query).scalars()
 
+
 def get_all(model):
     # return db.session.execute(select(model)).scalars().all()
     return execute_query(select(model)).all()
 
+
 def get_instance_by_id(model, id):
     return db.session.get(model, id)
+
 
 def get_one_by_condition(model, condition):
     # stmt = select(model).where(condition)
@@ -40,11 +44,13 @@ def get_one_by_condition(model, condition):
     # return result.scalars().first()
     return execute_query(select(model).where(condition)).first()
 
+
 def get_all_by_condition(model, condition):
     # stmt = select(model).where(condition)
     # result = db.session.execute(stmt)
     # return result.scalars().all()
     return execute_query(select(model).where(condition)).all()
+
 
 # ? before request - verify session login
 @app.before_request
@@ -159,6 +165,7 @@ class BaseResource(Resource):
             db.session.rollback()
             return {"message": "Invalid data"}, 422
 
+
 # ? User Account Signup/Login/Logout/Session Resources
 class Signup(Resource):
     model = User
@@ -187,6 +194,8 @@ class Signup(Resource):
         g.user = user
 
         return self.schema.dump(user), 201
+
+
 class CheckSession(Resource):
 
     def get(self):
@@ -201,6 +210,7 @@ class CheckSession(Resource):
             "bio": user.bio,
             "image_url": user.image_url,
         }, 200
+
 
 class Login(Resource):
     model = User
@@ -223,6 +233,7 @@ class Login(Resource):
         g.user = user
         return {"id": user.id, "username": user.username}, 200
 
+
 class Logout(Resource):
     def delete(self):
         if (user_id := session.get("user_id")) is None:
@@ -230,6 +241,7 @@ class Logout(Resource):
         session["user_id"] = None
         session["username"] = None
         return {}, 204
+
 
 class CharacterIndex(BaseResource):
     model = Character
@@ -249,8 +261,13 @@ class CharacterIndex(BaseResource):
 
     def delete(self, character_id=None):
         ipdb.set_trace()
+    def delete(self, character_id=None):
+        ipdb.set_trace()
         if g.user is None:
             return {"message": "Unauthorized"}, 401
+        if character_id is None:
+            character_id = g.user.id
+        return super().delete(g.user.id)
         if character_id is None:
             character_id = g.user.id
         return super().delete(g.user.id)
@@ -263,6 +280,7 @@ class CharacterIndex(BaseResource):
 
 class UsersIndex(BaseResource):
     model = User
+    schema = UserUpdateSchema()
     schema = UserUpdateSchema()
 
     def get(self):
@@ -291,11 +309,15 @@ class UsersIndex(BaseResource):
         return super().delete(g.user.id)
 
     def patch(self, user_id=None):
+    def patch(self, user_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
         if user_id is None:
             user_id = g.user.id
+        if user_id is None:
+            user_id = g.user.id
         return super().patch(g.user.id)
+
 
 class CampaignsIndex(BaseResource):
     model = Campaign
@@ -349,5 +371,5 @@ api.add_resource(
     CampaignsIndex, "/campaigns", "/campaigns/<int:campaign_id>", endpoint="campaigns"
 )
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(port=5555, debug=True)

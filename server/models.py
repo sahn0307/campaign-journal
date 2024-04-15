@@ -62,6 +62,7 @@ class Character(db.Model, SerializerMixin):
     campaigns = db.relationship("CharacterCampaign", back_populates="character")
 
     serialize_rules = ("-user", "-campaigns.characters")
+
 class Campaign(db.Model, SerializerMixin):
     __tablename__ = "campaigns"
 
@@ -70,9 +71,10 @@ class Campaign(db.Model, SerializerMixin):
     description = db.Column(db.Text)
     gamemaster_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
+    characters = db.relationship("CharacterCampaign", back_populates="campaign")
+    
     serialize_rules = ("-characters.user", "-gamemaster._password_hash")
 
-    characters = db.relationship("CharacterCampaign", back_populates="campaign")
 
 class CharacterCampaign(db.Model):
     __tablename__ = "character_campaigns"
