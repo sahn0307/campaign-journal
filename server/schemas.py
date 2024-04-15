@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, validates, ValidationError, pre_load
+from marshmallow import Schema, fields, validates, ValidationError, pre_load, post_dump
 from marshmallow.validate import Length
 from models import db, User, Campaign, Character
 from sqlalchemy import select
@@ -45,7 +45,7 @@ class UserSchema(Schema):
             if isinstance(value, str):
                 data[key] = value.strip()
         return data
-    
+
 
 class UserUpdateSchema(Schema):
     id = fields.Int(dump_only=True)
@@ -84,38 +84,6 @@ class UserUpdateSchema(Schema):
             if isinstance(value, str):
                 data[key] = value.strip()
         return data
-
-class CampaignSchema(Schema):
-    id = fields.Int(dump_only=True)
-    name = fields.Str(
-        required=True,
-        validate=Length(min=2),
-        metadata={"description": "The unique name of the campaign"},
-    )
-    description = fields.Str(
-        metadata={"description": "The description of the campaign"}
-    )
-    gamemaster_id = fields.Int(
-        metadata={"description": "The ID of the game master of the campaign"}
-    )
-
-    @validates("name")
-    def validate_name(self, value):
-        if self.context.get("is_create"):
-            if get_one_by_condition(Campaign, Campaign.name == value):
-                raise ValidationError("Campaign name already exists")
-        else:  # This is the update case
-            if not get_one_by_condition(Campaign, Campaign.name == value):
-                raise ValidationError("Campaign name does not exist")
-
-    @pre_load
-    def strip_strings(self, data, **kwargs):
-        for key, value in data.items():
-            if isinstance(value, str):
-                data[key] = value.strip()
-        return data
-
-
 class CharacterSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(
@@ -137,7 +105,37 @@ class CharacterSchema(Schema):
             if isinstance(value, str):
                 data[key] = value.strip()
         return data
-    
+
+class CampaignSchema(Schema):
+    id = fields.Int(dump_only=True)
+    name = fields.Str(
+        required=True,
+        validate=Length(min=2),
+        metadata={"description": "The unique name of the campaign"},
+    )
+    description = fields.Str(
+        metadata={"description": "The description of the campaign"}
+    )
+    gamemaster_id = fields.Int(
+        metadata={"description": "The ID of the game master of the campaign"}
+    )
+    characters = fields.Nested(CharacterSchema, many=True)
+
+    @validates("name")
+    def validate_name(self, value):
+        if self.context.get("is_create"):
+            if get_one_by_condition(Campaign, Campaign.name == value):
+                raise ValidationError("Campaign name already exists")
+        else:  # This is the update case
+            if not get_one_by_condition(Campaign, Campaign.name == value):
+                raise ValidationError("Campaign name does not exist")
+
+    @pre_load
+    def strip_strings(self, data, **kwargs):
+        for key, value in data.items():
+            if isinstance(value, str):
+                data[key] = value.strip()
+        return data
 
 #! Helper Functions
 
