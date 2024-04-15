@@ -10,6 +10,7 @@ import UserProfileList from '../pages/UserProfileList'
 import UserProvider from '../context/UserProvider';
 import { useState, useEffect } from 'react';
 import CampaignProvider from '../context/CampaignProvider';
+import CharacterProvider from '../context/CharacterProvider';
 
 function AppRoutes() {
   const [currentPage, setCurrentPage] = useState('');
@@ -30,8 +31,8 @@ function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/signup" element={<Authentication />} />
       <Route path="/login" element={<Authentication />} />
-      <Route path="/characters" element={<CharacterList />} />
-      <Route path="/characters/:id" element={<CharacterDetail />} />
+
+
       <Route path="/campaigns" element={
         <CampaignProvider>
           <CampaignList />
@@ -41,6 +42,18 @@ function AppRoutes() {
         <CampaignProvider>
           <CampaignDetail />
         </CampaignProvider>
+      } />
+
+
+      <Route path="/characters" element={
+        <CharacterProvider>
+          <CharacterList />
+        </CharacterProvider>
+      } />
+      <Route path="/characters/:id" element={
+        <CharacterProvider>
+          <CharacterDetail />
+        </CharacterProvider>
       } />
       <Route path="/profile/" element={
         <UserProvider>

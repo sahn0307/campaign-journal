@@ -1,23 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { getCharacters } from '../services/api';
+import React, { useMemo } from 'react';
+import { useCharacters } from '../context/CharacterProvider';
+import CharacterDetail from './CharacterDetail';
+import { useAuth } from '../context/AuthContext';
 
-function CharacterList() {
-  const [characters, setCharacters] = useState([]);
+const CharacterList = () => {
+    const { characters, handlePatchCharacter, handleDeleteCharacter, currentPage } = useCharacters();
+    const { user } = useAuth();
+    console.log('Current page:', currentPage);
 
-  useEffect(() => {
-    const fetchCharacters = async () => {
-      try {
-        const response = await getCharacters();
-        setCharacters(response.data);
-      } catch (error) {
-        console.error('Failed to fetch characters', error);
-      }
-    };
+    const characterList = useMemo(() => {
+        if (Array.isArray(characters)) {
+            return characters.map(character => (
+                <CharacterDetail 
+                    key={character.id} 
+                    {...character}
+                    handlePatchCharacter={handlePatchCharacter} 
+                    handleDeleteCharacter={handleDeleteCharacter} 
+                />
+            ));
+        } else {
+            console.error('Characters is not an array:', characters);
+            return null;
+        }
+    }, [characters, handlePatchCharacter, handleDeleteCharacter]);
 
-    fetchCharacters();
-  }, []);
+    if (!currentPage) {
+        return null;
+    }
 
-  // ...
-}
+    return (
+        <div>
+            {(user && characters) ? (
+                <>
+                    <h1>Characters</h1>
+                    <ul>
+                        {characterList}
+                    </ul>
+                </>
+            ) : (
+                <h1>You need to log in to view this page!</h1>
+            )}
+        </div>
+    );
+};
 
 export default CharacterList;

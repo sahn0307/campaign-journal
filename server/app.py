@@ -9,25 +9,19 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from marshmallow import Schema, fields, validates, ValidationError, pre_load
 from marshmallow.validate import Length
-from schemas import (
-    UserSchema,
-    CharacterSchema,
-    CampaignSchema,
-    UserUpdateSchema,
-)  # , CharacterCampaignSchema
-
+from schemas import UserSchema, CharacterSchema, CampaignSchema, UserUpdateSchema #, CharacterCampaignSchema
 # Local imports
 from config import app, db, api
 
 # Add your model imports
 from models import db, User, Character, Campaign, CharacterCampaign
 import ipdb
-
 # Views go here!
 
 #! @app.route('/')
 # def index():
 #     return '<h1>Project Server</h1>'
+
 
 
 #! helpers
@@ -267,8 +261,13 @@ class CharacterIndex(BaseResource):
 
     def delete(self, character_id=None):
         ipdb.set_trace()
+    def delete(self, character_id=None):
+        ipdb.set_trace()
         if g.user is None:
             return {"message": "Unauthorized"}, 401
+        if character_id is None:
+            character_id = g.user.id
+        return super().delete(g.user.id)
         if character_id is None:
             character_id = g.user.id
         return super().delete(g.user.id)
@@ -281,6 +280,7 @@ class CharacterIndex(BaseResource):
 
 class UsersIndex(BaseResource):
     model = User
+    schema = UserUpdateSchema()
     schema = UserUpdateSchema()
 
     def get(self):
@@ -309,8 +309,11 @@ class UsersIndex(BaseResource):
         return super().delete(g.user.id)
 
     def patch(self, user_id=None):
+    def patch(self, user_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
+        if user_id is None:
+            user_id = g.user.id
         if user_id is None:
             user_id = g.user.id
         return super().patch(g.user.id)
@@ -363,12 +366,7 @@ api.add_resource(Logout, "/logout", endpoint="logout")
 
 
 api.add_resource(UsersIndex, "/profile", "/profile/<int:user_id>", endpoint="profile")
-api.add_resource(
-    CharacterIndex,
-    "/characters",
-    "/characters/<int:character_id>",
-    endpoint="characters",
-)
+api.add_resource(CharacterIndex, "/characters", "/characters/<int:character_id>", endpoint="characters")
 api.add_resource(
     CampaignsIndex, "/campaigns", "/campaigns/<int:campaign_id>", endpoint="campaigns"
 )
