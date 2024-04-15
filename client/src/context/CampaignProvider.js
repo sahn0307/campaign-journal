@@ -36,24 +36,21 @@ const CampaignProvider = ({ children }) => {
     const handlePatchCampaign = async (id, updates) => {
         setCampaigns(campaigns.map(campaign => campaign.id === id ? { ...campaign, ...updates } : campaign));
         try {
-            const result = await patchJSON(`/api/v1/${currentPage}`, id, updates);
-            if (!result.ok) {
-                throw new Error('Patch failed: status: ' + result.status);
-            }
+            await patchJSON(`/api/v1/${currentPage}`, id, updates);
         } catch (err) {
             console.log(err);
             setCampaigns(currentCampaigns => currentCampaigns.map(campaign =>
                 campaign.id === id ? { ...campaign, ...revertUpdates(campaign, updates) } : campaign
             ));
         }
+    }
 
-        function revertUpdates(campaign, updates) {
-            const revertedUpdates = {};
-            for (let key in updates) {
-                revertedUpdates[key] = campaign[key];
-            }
-            return revertedUpdates;
+    function revertUpdates(campaign, updates) {
+        const revertedUpdates = {};
+        for (let key in updates) {
+            revertedUpdates[key] = campaign[key];
         }
+        return revertedUpdates;
     };
 
     const handleDeleteCampaign = async (id) => {
@@ -71,19 +68,19 @@ const CampaignProvider = ({ children }) => {
     };
 
     const handlePostCampaign = async (newCampaign) => {
-    try {
-        const resp = await postJSON(`/api/v1/${currentPage}`, newCampaign);
-        if (resp.ok) {
-            const campaign = await resp.json();
-            setCampaigns(currentCampaigns => [...currentCampaigns, campaign]);
-            console.log('Campaign created successfully');
-        } else {
-            throw new Error('Post failed: status: ' + resp.status);
+        try {
+            const resp = await postJSON(`/api/v1/${currentPage}`, newCampaign);
+            if (resp.status === 201) {
+                const campaign = await resp.json();
+                setCampaigns(prevCampaigns => [...prevCampaigns, campaign]);
+                console.log('Campaign created successfully');
+            } else {
+                throw new Error('Post failed: status: ' + resp.status);
+            }
+        } catch (err) {
+            console.log(err);
         }
-    } catch (err) {
-        console.log(err);
-    }
-};
+    };
 
     return (
         <CampaignsContext.Provider value={{ campaigns, handlePatchCampaign, handleDeleteCampaign, handlePostCampaign, currentPage }}>
