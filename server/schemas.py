@@ -127,8 +127,8 @@ class CampaignSchema(Schema):
             if get_one_by_condition(Campaign, Campaign.name == value):
                 raise ValidationError("Campaign name already exists")
         else:  # This is the update case
-            if not get_one_by_condition(Campaign, Campaign.name == value):
-                raise ValidationError("Campaign name does not exist")
+            if not get_one_by_condition(Campaign, Campaign.id == self.context.get("id")):
+                raise ValidationError("Campaign does not exist")
 
     @pre_load
     def strip_strings(self, data, **kwargs):

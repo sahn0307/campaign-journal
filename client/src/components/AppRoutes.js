@@ -1,30 +1,30 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
-import Home from '../pages/Home';
-import Authentication from '../pages/Authentication';
-import Login from '../pages/Login';
-import CharacterList from '../pages/CharacterList';
-import CharacterDetail from '../pages/CharacterDetail';
-import CampaignList from '../pages/CampaignList';
-import CampaignDetail from '../pages/CampaignDetail';
+import { Routes, Route, useLocation } from 'react-router-dom'
+import Home from '../pages/Home'
+import Authentication from '../pages/Authentication'
+import Login from '../pages/Login'
+import CharacterList from '../pages/CharacterList'
+import CharacterDetail from '../pages/CharacterDetail'
+import CampaignList from '../pages/CampaignList'
+import CampaignDetail from '../pages/CampaignDetail'
 import UserProfileList from '../pages/UserProfileList'
-import UserProvider from '../context/UserProvider';
-import { useState, useEffect } from 'react';
-import CampaignProvider from '../context/CampaignProvider';
-import CharacterProvider from '../context/CharacterProvider';
+import UserProvider from '../context/UserProvider'
+import { useState, useEffect } from 'react'
+import CampaignProvider from '../context/CampaignProvider'
+import CharacterProvider from '../context/CharacterProvider'
 
 function AppRoutes() {
-  const [currentPage, setCurrentPage] = useState('');
-  let location = useLocation();
+  const [currentPage, setCurrentPage] = useState('')
+  let location = useLocation()
 
   useEffect(() => {
-    const validPages = ['signup', 'login', 'characters', 'campaigns', 'profile'];
+    const validPages = ['signup', 'login', 'characters', 'campaigns', 'profile']
     const page = location.pathname.split('/')[1]
     if (validPages.includes(page)) {
-      setCurrentPage(page);
+      setCurrentPage(page)
     } else {
-      setCurrentPage('');
+      setCurrentPage('')
     }
-  }, [location]);
+  }, [location])
 
   return (
     <Routes>
@@ -61,7 +61,7 @@ function AppRoutes() {
         </UserProvider>
       } />
     </Routes>
-  );
+  )
 }
 
 export default AppRoutes

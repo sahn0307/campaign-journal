@@ -10,7 +10,7 @@ export const useCampaigns = () => useContext(CampaignsContext);
 const CampaignProvider = ({ children }) => {
     const { updateUser, logout } = useAuth();
     const [campaigns, setCampaigns] = useState([]);
-    const { deleteJSON, patchJSON } = useFetchJSON();
+    const { deleteJSON, patchJSON, postJSON } = useFetchJSON();
     const location = useLocation();
     const currentPage = location.pathname.slice(1);
 
@@ -70,8 +70,23 @@ const CampaignProvider = ({ children }) => {
         }
     };
 
+    const handlePostCampaign = async (newCampaign) => {
+    try {
+        const resp = await postJSON(`/api/v1/${currentPage}`, newCampaign);
+        if (resp.ok) {
+            const campaign = await resp.json();
+            setCampaigns(currentCampaigns => [...currentCampaigns, campaign]);
+            console.log('Campaign created successfully');
+        } else {
+            throw new Error('Post failed: status: ' + resp.status);
+        }
+    } catch (err) {
+        console.log(err);
+    }
+};
+
     return (
-        <CampaignsContext.Provider value={{ campaigns, handlePatchCampaign, handleDeleteCampaign, currentPage }}>
+        <CampaignsContext.Provider value={{ campaigns, handlePatchCampaign, handleDeleteCampaign, handlePostCampaign, currentPage }}>
             {children}
         </CampaignsContext.Provider>
     );

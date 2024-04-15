@@ -9,19 +9,12 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from marshmallow import Schema, fields, validates, ValidationError, pre_load
 from marshmallow.validate import Length
-from schemas import UserSchema, CharacterSchema, CampaignSchema, UserUpdateSchema #, CharacterCampaignSchema
-# Local imports
+from schemas import UserSchema, CharacterSchema, CampaignSchema, UserUpdateSchema
+
 from config import app, db, api
 
-# Add your model imports
 from models import db, User, Character, Campaign, CharacterCampaign
 import ipdb
-# Views go here!
-
-#! @app.route('/')
-# def index():
-#     return '<h1>Project Server</h1>'
-
 
 
 #! helpers
@@ -35,7 +28,11 @@ def get_all(model):
 
 
 def get_instance_by_id(model, id):
-    return db.session.get(model, id)
+    instance = db.session.get(model, id)
+    if instance:
+        return instance
+    else:
+        return None
 
 
 def get_one_by_condition(model, condition):
@@ -61,29 +58,6 @@ def load_logged_in_user():
     else:
         g.user = get_instance_by_id(User, user_id)
     #! Refactor this, remove recipebyid + consider additional adds
-    # path_dict = {"userbyid": User, "recipebyid": Recipe}
-
-    # # If the current request's endpoint is in the dictionary
-    # if request.endpoint in path_dict:
-    #     # Get the ID from the request's view arguments
-    #     id = request.view_args.get("id")
-
-    #     # Get the record from the database
-    #     record = db.session.get(path_dict.get(request.endpoint), id)
-
-    #     # Determine the attribute name to set on `g`
-    #     key_name = request.endpoint.replace("byid", "")
-
-    #     # Set the attribute on `g`
-    #     setattr(g, key_name, record)
-
-    # # If the user is logged in
-    # user_id = session.get("user_id")
-    # if user_id is not None:
-    #     # Get the user from the database and set it on `g`
-    #     g.user = get_instance_by_id(User, user_id)
-    # else:
-    #     g.user = None
 
 
 # ? Base class for CRUD resource classes
@@ -127,7 +101,7 @@ class BaseResource(Resource):
             db.session.rollback()
             return {"errors": str(e)}, 500
 
-    def post(self):
+    def post(self, data):
         try:
             data = self.schema.load(
                 request.json
@@ -261,26 +235,22 @@ class CharacterIndex(BaseResource):
 
     def delete(self, character_id=None):
         ipdb.set_trace()
-    def delete(self, character_id=None):
-        ipdb.set_trace()
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        if character_id is None:
-            character_id = g.user.id
-        return super().delete(g.user.id)
         if character_id is None:
             character_id = g.user.id
         return super().delete(g.user.id)
 
-    def patch(self, id):
+    def patch(self, character_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
+        if character_id is None:
+            character_id = g.user.id
         return super().patch(id)
 
 
 class UsersIndex(BaseResource):
     model = User
-    schema = UserUpdateSchema()
     schema = UserUpdateSchema()
 
     def get(self):
@@ -313,7 +283,7 @@ class UsersIndex(BaseResource):
             return {"message": "Unauthorized"}, 401
         if user_id is None:
             user_id = g.user.id
-        return super().patch(g.user.id)
+        return super().patch(user_id)
 
 
 class CampaignsIndex(BaseResource):
@@ -325,7 +295,12 @@ class CampaignsIndex(BaseResource):
             return {"message": "Unauthorized"}, 401
         if campaign_id is None:
             campaign_id = g.user.id
-        return super().get(condition=(Campaign.gamemaster_id == g.user.id))
+        data = super().get(condition=(Campaign.gamemaster_id == g.user.id))
+        # If you want to validate or manipulate the data, you can do so here
+        # For example, you can load the data into the schema and then dump it again
+        # data = self.schema.load(data)
+        # data = self.schema.dump(data)
+        return data
 
     def delete(self, campaign_id=None):
         if g.user is None:
@@ -334,8 +309,7 @@ class CampaignsIndex(BaseResource):
             campaign_id = g.user.id
 
         # Get the campaign
-        campaign = Campaign.query.get(campaign_id)
-
+        campaign = get_instance_by_id(Campaign, campaign_id)
         # Check if the campaign exists
         if not campaign:
             return {"message": "Campaign not found"}, 404
@@ -350,10 +324,35 @@ class CampaignsIndex(BaseResource):
         # Now you can delete the campaign
         return super().delete(campaign_id)
 
-    def patch(self, campaign_id):
+    def patch(self, campaign_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
+        if campaign_id is None:
+            campaign_id = super().get(condition=(Campaign.gamemaster_id == g.user.id))
+        if campaign_id is None:
+            return {"message": "Campaign not found"}, 404
+        data = request.json
+        data["gamemaster_id"] = g.user.id
+        try:
+            self.schema.context = {"is_create": False, "id": campaign_id}
+            data = self.schema.load(data)
+        except ValidationError as err:
+            return err.messages, 400
         return super().patch(campaign_id)
+
+
+    def post(self, data=None):
+        if g.user is None:
+            return {"message": "Unauthorized"}, 401
+        if data is None:
+            data = request.json
+        data["gamemaster_id"] = g.user.id
+        try:
+            self.schema.context = {"is_create": True}
+            data = self.schema.load(data)
+        except ValidationError as err:
+            return err.messages, 400
+        return super().post(data)
 
 
 api.add_resource(Signup, "/signup", endpoint="signup")
@@ -363,7 +362,12 @@ api.add_resource(Logout, "/logout", endpoint="logout")
 
 
 api.add_resource(UsersIndex, "/profile", "/profile/<int:user_id>", endpoint="profile")
-api.add_resource(CharacterIndex, "/characters", "/characters/<int:character_id>", endpoint="characters")
+api.add_resource(
+    CharacterIndex,
+    "/characters",
+    "/characters/<int:character_id>",
+    endpoint="characters",
+)
 api.add_resource(
     CampaignsIndex, "/campaigns", "/campaigns/<int:campaign_id>", endpoint="campaigns"
 )
