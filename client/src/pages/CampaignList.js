@@ -37,6 +37,7 @@ const CampaignList = () => {
                     <ul>
                         {campaignList}
                     </ul>
+                    
                 </>
             ) : (
                 <h1>You need to log in to view this page!</h1>

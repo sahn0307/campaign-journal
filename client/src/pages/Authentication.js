@@ -92,13 +92,13 @@ useEffect(() => {
   <div className="authentication">
     <ToastContainer />
     <form className="authentication-form" onSubmit={formik.handleSubmit}>
-      <label>Username</label>
+      <label>Username:</label>
       <input type='text' name='username' value={formik.values.username} onChange={formik.handleChange} />
-      <label>Password</label>
+      <label>Password:</label>
       <input type='password' name='password_hash' value={formik.values.password_hash} onChange={formik.handleChange} />
       {signUp && (
         <>
-          <label>Email</label>
+          <label>Email:</label>
           <input type='text' name='email' value={formik.values.email} onChange={formik.handleChange} />
           <label>Would you like to be a game master?</label>
           <input type='checkbox' name='game_master' checked={formik.values.game_master} onChange={formik.handleChange} />
@@ -112,21 +112,3 @@ useEffect(() => {
 
 export default Authentication;
 
-//export const Form = styled.form`
-//   display: flex;
-//   flex-direction: column;
-//   width: 400px;
-//   margin: auto;
-//   font-family: Arial;
-//   font-size: 30px;
-
-//   input[type=submit] {
-//     background-color: #42ddf5;
-//     color: white;
-//     height: 40px;
-//     font-family: Arial;
-//     font-size: 30px;
-//     margin-top: 10px;
-//     margin-bottom: 10px;
-//   }
-// `;

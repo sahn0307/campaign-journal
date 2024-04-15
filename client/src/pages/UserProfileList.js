@@ -12,10 +12,9 @@ const UserProfileList = () => {
   
     return (
       <div className="user-profile-container">
-        <div className="user-profile">
+
           {users ? (
             <>
-              <h1>Profiles</h1>
               <div>
                 {users.map((user) => (
                   <UserProfileDetail
@@ -30,7 +29,7 @@ const UserProfileList = () => {
           ) : (
             <h1>Loading...</h1>
           )}
-        </div>
+
       </div>
     );
   };

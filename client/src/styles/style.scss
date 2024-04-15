@@ -1,6 +1,12 @@
 // App.scss
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap');
 
-$light-mode-bg: #f5f5f5;
+body {
+  font-family: 'Cinzel Decorative', cursive;
+}
+
+
+$light-mode-bg: #1c1c1c;
 $light-mode-text: #333;
 
 $dark-mode-bg: #2c2c2c;
@@ -20,3 +26,5 @@ $dark-mode-text: #fff;
     color: $dark-mode-text;
   }
 }
+
+//background-color: #1c1c1c;
