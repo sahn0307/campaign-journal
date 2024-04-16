@@ -1,13 +1,13 @@
 from flask_sqlalchemy import SQLAlchemy
 from config import db, bcrypt
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import validates
 # from sqlalchemy.sql.expression import text
 
 # db = SQLAlchemy()
 
-class User(db.Model, SerializerMixin):
+class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -21,11 +21,11 @@ class User(db.Model, SerializerMixin):
         "CharacterCampaign", back_populates="gamemaster"
     )
 
-    serialize_rules = (
-        "-characters.user",
-        "-character_campaigns",
-        "-_password_hash",
-    )
+    # serialize_rules = (
+    #     "-characters.user",
+    #     "-character_campaigns",
+    #     "-_password_hash",
+    # )
     @hybrid_property
     def password_hash(self):
         raise AttributeError("password_hash is not a readable attribute")
@@ -45,7 +45,7 @@ class User(db.Model, SerializerMixin):
     #     result = db.session.execute(text("SELECT id FROM users LIMIT 1")).first()
     #     return result[0] if result else None
 
-class Character(db.Model, SerializerMixin):
+class Character(db.Model):
     __tablename__ = "characters"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -59,11 +59,12 @@ class Character(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
     user = db.relationship("User", back_populates="characters")
-    campaigns = db.relationship("CharacterCampaign", back_populates="character")
+    character_campaigns = db.relationship("CharacterCampaign", back_populates="character")
+    campaigns = association_proxy("character_campaigns", "campaign")
 
-    serialize_rules = ("-user.characters", "-campaigns.characters")
+    # serialize_rules = ("-user.characters", "-campaigns.characters")
 
-class Campaign(db.Model, SerializerMixin):
+class Campaign(db.Model):
     __tablename__ = "campaigns"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -71,9 +72,10 @@ class Campaign(db.Model, SerializerMixin):
     description = db.Column(db.Text)
     gamemaster_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    characters = db.relationship("CharacterCampaign", back_populates="campaign")
+    character_campaigns = db.relationship("CharacterCampaign", back_populates="campaign")
+    characters = association_proxy("character_campaigns", "character")
     
-    serialize_rules = ("characters.campaign", "-characters.campaign.characters")
+    # serialize_rules = ("characters.campaigns",)
 
 
 class CharacterCampaign(db.Model):
@@ -82,8 +84,8 @@ class CharacterCampaign(db.Model):
     character_id = db.Column(db.Integer, db.ForeignKey("characters.id"), primary_key=True)
     campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id"), primary_key=True)
     gamemaster_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    character = db.relationship("Character", back_populates="campaigns")
-    campaign = db.relationship("Campaign", back_populates="characters")
+    character = db.relationship("Character", back_populates="character_campaigns")
+    campaign = db.relationship("Campaign", back_populates="character_campaigns")
     gamemaster = db.relationship("User", back_populates="character_campaigns")
 
     serialize_rules = ("-campaign", "-gamemaster._password_hash", "campaign.character")
