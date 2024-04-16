@@ -4,7 +4,20 @@ import '../styles/nav.scss'
 import { useAuth } from '../context/AuthContext'
 
 function NavBar({ mode, toggleMode }) {
-  const { user, updateUser, logout } = useAuth()
+  const { user, updateUser } = useAuth()
+  const navigate = useNavigate()
+
+  const logout = () => {
+    fetch("/api/v1/logout", {method: "DELETE"})
+      .then(resp => {
+        if (resp.status === 204) {
+          updateUser(null)
+          navigate('/')
+        }
+      })
+      .catch(err => console.log(err))
+  }
+
 
   return (
     <nav className="NavBar">
