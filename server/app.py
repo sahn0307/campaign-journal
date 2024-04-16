@@ -331,8 +331,6 @@ class CampaignsIndex(BaseResource):
     def get(self, campaign_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        if campaign_id is None:
-            campaign_id = g.user.id
         data = super().get(condition=(Campaign.gamemaster_id == g.user.id))
         # If you want to validate or manipulate the data, you can do so here
         # For example, you can load the data into the schema and then dump it again
