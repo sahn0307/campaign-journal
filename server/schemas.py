@@ -136,7 +136,7 @@ class CampaignSchema(Schema):
     gamemaster_id = fields.Int(
         metadata={"description": "The ID of the game master of the campaign"}
     )
-    characters = fields.Nested("CharacterSchema", many=True, exclude=("campaigns",))
+    characters = fields.Nested(CharacterSchema, only = ("id", "name") , many=True)
 
     @validates("name")
     def validate_name(self, value):
