@@ -88,6 +88,6 @@ class CharacterCampaign(db.Model):
     campaign = db.relationship("Campaign", back_populates="character_campaigns")
     gamemaster = db.relationship("User", back_populates="character_campaigns")
 
-    serialize_rules = ("-campaign", "-gamemaster._password_hash", "campaign.character")
+    # serialize_rules = ("-campaign", "-gamemaster._password_hash", "campaign.character")
 
     # Quests?

@@ -13,9 +13,10 @@ export const useFetchJSON = () => {
         try {
             const res = await fetch(url, configObj)
             if (!res.ok) {
-                throw new Error('Request Failed: status: ' + res.status)
+                const errorBody = await res.json();
+                throw new Error(errorBody.message || 'Request Failed: status: ' + res.status)
             }
-            return res
+            return res;
         } 
         catch (error) {
             throw new Error('Failed to Fetch: Is the server running?')

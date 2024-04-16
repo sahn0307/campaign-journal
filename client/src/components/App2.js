@@ -5,6 +5,7 @@ import '../styles/style.scss'
 import { useState , useEffect} from 'react'
 import AppRoutes from './AppRoutes'
 
+
 function App2() {
   const [mode, setMode] = useState('light')
 

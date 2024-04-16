@@ -14,17 +14,17 @@ import CharacterProvider from '../context/CharacterProvider'
 
 function AppRoutes() {
   const [currentPage, setCurrentPage] = useState('')
-  let location = useLocation()
+  // let location = useLocation()
 
-  useEffect(() => {
-    const validPages = ['signup', 'login', 'characters', 'campaigns', 'profile']
-    const page = location.pathname.split('/')[1]
-    if (validPages.includes(page)) {
-      setCurrentPage(page)
-    } else {
-      setCurrentPage('')
-    }
-  }, [location])
+  // useEffect(() => {
+  //   const validPages = ['signup', 'login', 'characters', 'campaigns', 'profile']
+  //   const page = location.pathname.split('/')[1]
+  //   if (validPages.includes(page)) {
+  //     setCurrentPage(page)
+  //   } else {
+  //     setCurrentPage('')
+  //   }
+  // }, [location])
 
   return (
     <Routes>
