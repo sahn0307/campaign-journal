@@ -59,12 +59,8 @@ class UserUpdateSchema(Schema):
 
     @validates("username")
     def validate_username(self, value):
-        if self.context.get("is_signup"):
-            if get_one_by_condition(User, User.username == value):
-                raise ValidationError("Username already exists")
-        else:  # This is the login case
-            if not get_one_by_condition(User, User.username == value):
-                raise ValidationError("Username does not exist")
+        if get_one_by_condition(User, User.username == value):
+            raise ValidationError("Username already exists")
 
     @validates("email")
     def validate_email(self, value):
@@ -128,7 +124,7 @@ class CampaignSchema(Schema):
     gamemaster_id = fields.Int(
         metadata={"description": "The ID of the game master of the campaign"}
     )
-    characters = fields.Nested(CharacterSchema, many=True)
+    characters = fields.Nested(CharacterSchema, only = ("id", "name") , many=True)
 
     @validates("name")
     def validate_name(self, value):
