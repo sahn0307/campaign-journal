@@ -130,21 +130,20 @@ const UserProfileDetail = ({ user, handlePatchUser, handleDeleteUser }) => {
                 <input type="checkbox" name="game_master" checked={formik.values.game_master} onChange={formik.handleChange} />
               </>
         )}
-          <button type="button" onClick={() => setShowChangePassword(!showChangePassword)}>
-            {showChangePassword ? 'Change Profile Information' : 'Change Password'}
-          </button>
         {showChangePassword && (
           <>
             <label>New Password</label>
-            <input type="password" name="new_password" value={formik.values.new_password} onChange={formik.handleChange} autoComplete="new-password"/>
+            <input type="password" placeholder="Enter New Password" name="new_password" value={formik.values.new_password} onChange={formik.handleChange} autoComplete="new-password"/>
           </>
         )}
         <label>Current Password</label>
-        <input type="password" name="current_password" value={formik.values.current_password} onChange={formik.handleChange} autoComplete="current-password" />
+        <input type="password" placeholder="Current Password Required" name="current_password" value={formik.values.current_password} onChange={formik.handleChange} autoComplete="current-password" />
         <button type="submit">Save</button>
-        <button type="button" onClick={() => setIsEditMode(false)}>
-          Cancel
-        </button>
+            {showChangePassword ? null : <button type="button" onClick={() => setIsEditMode(false)}> Cancel
+            </button>}
+          <button type="button" onClick={() => setShowChangePassword(!showChangePassword)}>
+            {showChangePassword ? 'Cancel' : 'Change Password'}
+          </button>
         </form>
       )}
       <ToastContainer />
