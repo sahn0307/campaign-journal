@@ -61,7 +61,7 @@ class Character(db.Model, SerializerMixin):
     user = db.relationship("User", back_populates="characters")
     campaigns = db.relationship("CharacterCampaign", back_populates="character")
 
-    serialize_rules = ("-user.characters", "-campaigns.characters")
+    # serialize_rules = ("-user.characters", "-campaigns.characters")
 
 class Campaign(db.Model, SerializerMixin):
     __tablename__ = "campaigns"
@@ -73,7 +73,7 @@ class Campaign(db.Model, SerializerMixin):
 
     characters = db.relationship("CharacterCampaign", back_populates="campaign")
     
-    serialize_rules = ("characters.campaign", "-characters.campaign.characters")
+    # serialize_rules = ("characters.campaign", "-characters.campaign.characters")
 
 
 class CharacterCampaign(db.Model):
@@ -86,6 +86,6 @@ class CharacterCampaign(db.Model):
     campaign = db.relationship("Campaign", back_populates="characters")
     gamemaster = db.relationship("User", back_populates="character_campaigns")
 
-    serialize_rules = ("-campaign", "-gamemaster._password_hash", "campaign.character")
+    # serialize_rules = ("-campaign", "-gamemaster._password_hash", "campaign.character")
 
     # Quests?

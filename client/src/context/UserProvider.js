@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react'
 import { useFetchJSON } from '../utils/helpers'
 import { useAuth } from './AuthContext'
 import { useLocation } from 'react-router-dom'
+import { toast } from 'react-toastify';
 
 const UsersContext = createContext()
 
@@ -43,7 +44,7 @@ const UserProvider = ({ children }) => {
             }
         } catch (err) {
             console.log(err)
-            // setTimeout(() => includeErrorAlerts(''), 5000)
+            toast.error(err.message);
             setUsers(currentUsers => currentUsers.map(user =>
                 user.id === id ? { ...user, ...revertUpdates(user, updates) } : user
             ))

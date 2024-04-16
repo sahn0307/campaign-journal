@@ -1,36 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/UserProfile.scss';
+import { useNavigate } from 'react-router-dom';
 
 const UserProfileDetail = ({ user, handlePatchUser, handleDeleteUser }) => {
   const [isEditMode, setIsEditMode] = useState(false);
-  const [formSchema, setFormSchema] = useState(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    setFormSchema(
-      yup.object().shape({
-        username: yup.string().required('Please enter a username'),
-        email: yup.string().email().required('Please enter an email'),
-        game_master: yup.boolean(),
-      })
-    );
-  }, []);
+  const schema = yup.object().shape({
+    username: yup.string().required('Please enter a username'),
+    email: yup.string().email().required('Please enter an email'),
+    game_master: yup.boolean(),
+    current_password: yup.string().required('Please enter your current password'),
+    new_password: yup.string(),
+  });
 
   const formik = useFormik({
     initialValues: {
       username: user.username || '',
       email: user.email || '',
       game_master: user.game_master || false,
+      current_password: '',
+      new_password: '',
     },
-    validationSchema: formSchema,
+    validationSchema: schema,
     onSubmit: (values) => {
-      handlePatchUser(user.id, values)
-        .then(() => {
-          toast.success('Profile updated successfully');
+      if (showChangePassword && !values.new_password) {
+        toast.error('Please enter a new password');
+        return;
+  }
+      const payload = {
+        username: values.username,
+        email: values.email,
+        game_master: values.game_master,
+        current_password: values.current_password,
+      };
+
+      if (showChangePassword) {
+        payload.password_hash = values.new_password;
+      }
+
+      handlePatchUser(user.id, payload)
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error('Update failed');
+          }
+          toast.success(showChangePassword ? 'Password updated successfully' : 'Profile updated successfully');
           setIsEditMode(false);
+          setShowChangePassword(false);
+          formik.resetForm({
+          values: {
+            ...formik.values,
+            current_password: '',
+            new_password: '',
+            },
+          });
         })
         .catch((error) => {
           if (typeof error.message === 'string') {
@@ -42,6 +70,13 @@ const UserProfileDetail = ({ user, handlePatchUser, handleDeleteUser }) => {
               });
             }
           }
+                formik.resetForm({
+        values: {
+          ...formik.values,
+          current_password: '',
+          new_password: '',
+        },
+      });
         });
     },
     enableReinitialize: true,
@@ -51,6 +86,7 @@ const UserProfileDetail = ({ user, handlePatchUser, handleDeleteUser }) => {
     const confirmDelete = window.confirm('Are you sure you want to delete your account?');
     if (confirmDelete) {
       handleDeleteUser(user.id);
+      navigate('/login');
     }
   };
 
@@ -83,17 +119,32 @@ const UserProfileDetail = ({ user, handlePatchUser, handleDeleteUser }) => {
           </div>
         </div>
       ) : (
-        <form onSubmit={formik.handleSubmit}>
-          <label>Username</label>
-          <input type="text" name="username" value={formik.values.username} onChange={formik.handleChange} />
-          <label>Email</label>
-          <input type="text" name="email" value={formik.values.email} onChange={formik.handleChange} />
-          <label>Game Master</label>
-          <input type="checkbox" name="game_master" checked={formik.values.game_master} onChange={formik.handleChange} />
-          <button type="submit">Save</button>
-          <button type="button" onClick={() => setIsEditMode(false)}>
-            Cancel
+          <form onSubmit={formik.handleSubmit}>
+            {!showChangePassword && (
+              <>
+                <label>Username</label>
+                <input type="text" name="username" value={formik.values.username} onChange={formik.handleChange} autoComplete="username"/>
+                <label>Email</label>
+                <input type="text" name="email" value={formik.values.email} onChange={formik.handleChange} autoComplete="email"/>
+                <label>Game Master</label>
+                <input type="checkbox" name="game_master" checked={formik.values.game_master} onChange={formik.handleChange} />
+              </>
+        )}
+          <button type="button" onClick={() => setShowChangePassword(!showChangePassword)}>
+            {showChangePassword ? 'Change Profile Information' : 'Change Password'}
           </button>
+        {showChangePassword && (
+          <>
+            <label>New Password</label>
+            <input type="password" name="new_password" value={formik.values.new_password} onChange={formik.handleChange} autoComplete="new-password"/>
+          </>
+        )}
+        <label>Current Password</label>
+        <input type="password" name="current_password" value={formik.values.current_password} onChange={formik.handleChange} autoComplete="current-password" />
+        <button type="submit">Save</button>
+        <button type="button" onClick={() => setIsEditMode(false)}>
+          Cancel
+        </button>
         </form>
       )}
       <ToastContainer />

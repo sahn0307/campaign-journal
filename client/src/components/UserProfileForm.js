@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 const UserProfileForm = ({ user, handlePatchUser }) => {
     const [formSchema, setFormSchema] = useState(null)
+    const [isEditMode, setIsEditMode] = useState(false)
 
     useEffect(() => {
     setFormSchema(
@@ -14,6 +15,8 @@ const UserProfileForm = ({ user, handlePatchUser }) => {
         username: yup.string().required('Please enter a username'),
         email: yup.string().email().required('Please enter an email'),
         game_master: yup.boolean(),
+        new_password: yup.string(),
+        current_password: yup.string().required('Please enter your current password'),
         })
     )
     }, [])
@@ -23,12 +26,24 @@ const UserProfileForm = ({ user, handlePatchUser }) => {
         username: user ? user.username : '',
         email: user ? user.email : '',
         game_master: user ? user.game_master : false,
+        password_hash: user ? user.password_hash : '',
+        current_password: '',
     },
     validationSchema: formSchema,
-    onSubmit: (values) => {
-        handlePatchUser(user.id, values)
+        onSubmit: (values) => {
+        const dataToSend = {
+            username: values.username,
+            email: values.email,
+            game_master: values.game_master,
+            current_password: values.current_password,
+        };
+        if (values.new_password) {
+            dataToSend.new_password = values.new_password;
+        }
+        handlePatchUser(user.id, values, values.current_password)
         .then(() => {
             toast.success('Profile updated successfully')
+            setIsEditMode(false)
         })
         .catch((error) => {
             if (typeof error.message === 'string') {
@@ -68,6 +83,15 @@ const UserProfileForm = ({ user, handlePatchUser }) => {
         checked={formik.values.game_master}
         onChange={formik.handleChange}
         />
+        <label>Password</label>
+        <input
+        type="password"
+        name="password_hash"
+        value={formik.values.password_hash}
+        onChange={formik.handleChange}
+            />
+        <label>Current Password</label>
+        <input type="password" name="current_password" value={formik.values.current_password} onChange={formik.handleChange} />
         <button type="submit">Update Profile</button>
     </Form>
     )

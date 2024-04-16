@@ -56,20 +56,27 @@ class UserUpdateSchema(Schema):
     )
     email = fields.Str(metadata={"description": "The email of the user"}) #! NEED REGEX! 
     game_master = fields.Boolean(metadata={"description": "The option to determine if this user is a game master or not"})
+    password_hash = fields.Str(
+        validate=Length(min=1),
+        metadata={"description": "The new password of the user"},
+    )
+    current_password = fields.Str(
+        metadata={"description": "The current password of the user"}
+    )
 
     @validates("username")
     def validate_username(self, value):
-        if self.context.get("is_signup"):
-            if get_one_by_condition(User, User.username == value):
-                raise ValidationError("Username already exists")
-        else:  # This is the login case
-            if not get_one_by_condition(User, User.username == value):
-                raise ValidationError("Username does not exist")
+        existing_user = get_one_by_condition(User, User.username == value)
+        if self.context.get("is_update") and existing_user and existing_user.id != self.context.get("user_id"):
+            raise ValidationError("Username already exists")
 
     @validates("email")
     def validate_email(self, value):
-        if self.context.get("is_signup") and get_one_by_condition(
-            User, User.email == value
+        existing_user = get_one_by_condition(User, User.email == value)
+        if (
+            self.context.get("is_update")
+            and existing_user
+            and existing_user.id != self.context.get("user_id")
         ):
             raise ValidationError("Email already exists")
 
@@ -98,6 +105,7 @@ class CharacterSchema(Schema):
     alive = fields.Boolean(metadata={"description": "The alive status of the character"})
     description = fields.Str(metadata={"description": "The description of the character"})
     user_id = fields.Int(metadata={"description": "The user id associated with the character"})
+    campaigns = fields.Nested("CampaignSchema", many=True, exclude=("characters",))
 
     @validates("name")
     def validate_name(self, value):
@@ -128,7 +136,7 @@ class CampaignSchema(Schema):
     gamemaster_id = fields.Int(
         metadata={"description": "The ID of the game master of the campaign"}
     )
-    characters = fields.Nested(CharacterSchema, many=True)
+    characters = fields.Nested("CharacterSchema", many=True, exclude=("campaigns",))
 
     @validates("name")
     def validate_name(self, value):
