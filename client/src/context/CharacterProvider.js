@@ -10,7 +10,7 @@ export const useCharacters = () => useContext(CharactersContext);
 const CharacterProvider = ({ children }) => {
     const { updateUser, logout } = useAuth();
     const [characters, setCharacters] = useState([]);
-    const { deleteJSON, patchJSON } = useFetchJSON();
+    const { deleteJSON, patchJSON, postJSON } = useFetchJSON();
     const location = useLocation();
     const currentPage = location.pathname.slice(1);
 
@@ -70,8 +70,23 @@ const CharacterProvider = ({ children }) => {
         }
     };
 
+    const handlePostCharacter = async (newCampaign) => {
+        try {
+            const resp = await postJSON(`/api/v1/${currentPage}`, newCampaign);
+            if (resp.status === 201) {
+                const campaign = await resp.json();
+                setCharacters(prevCampaigns => [...prevCampaigns, campaign]);
+                console.log('Campaign created successfully');
+            } else {
+                throw new Error('Post failed: status: ' + resp.status);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
     return (
-        <CharactersContext.Provider value={{ characters, handlePatchCharacter, handleDeleteCharacter, currentPage }}>
+        <CharactersContext.Provider value={{ characters, handlePatchCharacter, handleDeleteCharacter,handlePostCharacter, currentPage }}>
             {children}
         </CharactersContext.Provider>
     );

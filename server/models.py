@@ -73,7 +73,7 @@ class Campaign(db.Model, SerializerMixin):
 
     characters = db.relationship("CharacterCampaign", back_populates="campaign")
     
-    serialize_rules = ("characters.campaigns",)
+    serialize_rules = ("characters.campaign", "-characters.campaign.characters")
 
 
 class CharacterCampaign(db.Model):
