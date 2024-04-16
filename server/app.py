@@ -16,16 +16,13 @@ from config import app, db, api
 from models import db, User, Character, Campaign, CharacterCampaign
 import ipdb
 
-
 #! helpers
 def execute_query(query):
     return db.session.execute(query).scalars()
 
-
 def get_all(model):
     # return db.session.execute(select(model)).scalars().all()
     return execute_query(select(model)).all()
-
 
 def get_instance_by_id(model, id):
     instance = db.session.get(model, id)
@@ -34,20 +31,17 @@ def get_instance_by_id(model, id):
     else:
         return None
 
-
 def get_one_by_condition(model, condition):
     # stmt = select(model).where(condition)
     # result = db.session.execute(stmt)
     # return result.scalars().first()
     return execute_query(select(model).where(condition)).first()
 
-
 def get_all_by_condition(model, condition):
     # stmt = select(model).where(condition)
     # result = db.session.execute(stmt)
     # return result.scalars().all()
     return execute_query(select(model).where(condition)).all()
-
 
 # ? before request - verify session login
 @app.before_request
@@ -58,7 +52,6 @@ def load_logged_in_user():
     else:
         g.user = get_instance_by_id(User, user_id)
     #! Refactor this, remove recipebyid + consider additional adds
-
 
 # ? Base class for CRUD resource classes
 class BaseResource(Resource):
@@ -139,7 +132,6 @@ class BaseResource(Resource):
             db.session.rollback()
             return {"message": "Invalid data"}, 422
 
-
 # ? User Account Signup/Login/Logout/Session Resources
 class Signup(Resource):
     model = User
@@ -168,8 +160,6 @@ class Signup(Resource):
         g.user = user
 
         return self.schema.dump(user), 201
-
-
 class CheckSession(Resource):
 
     def get(self):
@@ -184,7 +174,6 @@ class CheckSession(Resource):
             "bio": user.bio,
             "image_url": user.image_url,
         }, 200
-
 
 class Login(Resource):
     model = User
@@ -207,7 +196,6 @@ class Login(Resource):
         g.user = user
         return {"id": user.id, "username": user.username}, 200
 
-
 class Logout(Resource):
     def delete(self):
         if (user_id := session.get("user_id")) is None:
@@ -215,7 +203,6 @@ class Logout(Resource):
         session["user_id"] = None
         session["username"] = None
         return {}, 204
-
 
 class CharacterIndex(BaseResource):
     model = Character
@@ -228,25 +215,55 @@ class CharacterIndex(BaseResource):
         return super().get(condition=Character.user_id == g.user.id)
 
     def post(self):
-        # if (_ := session.get("user_id")) is None:
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        return super().post()
+        data = request.json
+        if data is None:
+            return {"message": "No data provided"}, 400
+        data["user_id"] = g.user.id
+        try:
+            self.schema.context = {"is_create": True}
+            data = self.schema.load(data)
+        except ValidationError as err:
+            return err.messages, 400
+        return super().post(data)
 
     def delete(self, character_id=None):
-        ipdb.set_trace()
         if g.user is None:
             return {"message": "Unauthorized"}, 401
         if character_id is None:
             character_id = g.user.id
-        return super().delete(g.user.id)
+
+        # Get the character
+        character = get_instance_by_id(Character, character_id)
+        # Check if the character exists
+        if not character:
+            return {"message": "Character not found"}, 404
+
+        # Delete or reassign all instances that reference the character
+        # Assuming you have a relationship similar to CharacterCampaign for characters
+        for cc in character.campaigns:
+            db.session.delete(cc)
+
+        # Commit the changes
+        db.session.commit()
+
+        # Now you can delete the character
+        return super().delete(character_id)
 
     def patch(self, character_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
         if character_id is None:
             character_id = g.user.id
-        return super().patch(id)
+        data = request.json
+        data["user_id"] = g.user.id
+        try:
+            self.schema.context = {"is_create": False, "id": character_id}
+            data = self.schema.load(data)
+        except ValidationError as err:
+            return err.messages, 400
+        return super().patch(character_id)
 
 
 class UsersIndex(BaseResource):
@@ -340,12 +357,12 @@ class CampaignsIndex(BaseResource):
             return err.messages, 400
         return super().patch(campaign_id)
 
-
     def post(self, data=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
+        data = request.json
         if data is None:
-            data = request.json
+            return {"message": "No data provided"}, 400
         data["gamemaster_id"] = g.user.id
         try:
             self.schema.context = {"is_create": True}

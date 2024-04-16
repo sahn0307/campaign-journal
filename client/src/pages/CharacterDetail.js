@@ -1,19 +1,13 @@
-import React, { useState } from 'react'
-import CharacterDetailForm from '../components/CharacterDetailForm'
+import React from 'react'
 
-
-const CharacterDetail = ({ id, name, description, alive, handlePatchCharacter, handleDeleteCharacter, handlePostCharacter }) => {
-    const [showForm, setShowForm] = useState(false)
-    const character = { id, name, description, alive }
-
+const CharacterDetail = ({ id, name, description, alive, handleDeleteCharacter, startUpdate }) => {
     return (
         <li key={id}>
             <span>Name: {name}</span>
             <span>Description: {description}</span>
             <span>{`Is Active: ${alive}`}</span>
-            <button onClick={() => setShowForm(true)}>Update</button>
+            <button onClick={startUpdate}>Update</button>
             <button onClick={() => handleDeleteCharacter(id)}>Delete</button>
-            {showForm && <CharacterDetailForm character={character} handlePatchCharacter={handlePatchCharacter} handlePostCharacter={handlePostCharacter} />}
         </li>
     )
 }
