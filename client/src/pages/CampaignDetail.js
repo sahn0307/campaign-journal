@@ -58,10 +58,10 @@ const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaig
           <div className="campaign-info-item">
             <span className="label">Description:</span>
             <span className="value">{description}</span>
-          </div>
+          </div> 
           <div className="campaign-info-item">
             <span className="label">Active Characters:</span>
-            <span className="value">{characters.map((characterCampaign) => characterCampaign.character).join(', ')}</span>
+            <span className="value">{characters.map(character => <span key={character.user_id}>{character.name}</span>)}</span>
           </div>
           <div className="button-group">
             <button className="update-button" onClick={() => setIsEditMode(true)}>
