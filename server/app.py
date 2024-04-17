@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from marshmallow import Schema, fields, validates, ValidationError, pre_load
 from marshmallow.validate import Length
 from schemas import UserSchema, CharacterSchema, CampaignSchema, UserUpdateSchema
+from time import time
 
 from config import app, db, api
 
@@ -44,6 +45,14 @@ def get_all_by_condition(model, condition):
     return execute_query(select(model).where(condition)).all()
 
 # ? before request - verify session login
+# @app.before_request
+# def load_logged_in_user():
+#     user_id = session.get("user_id")
+#     if user_id is None:
+#         g.user = None
+#     else:
+#         g.user = get_instance_by_id(User, user_id)
+#     #! Refactor this, remove recipebyid + consider additional adds
 @app.before_request
 def load_logged_in_user():
     user_id = session.get("user_id")
@@ -51,7 +60,33 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = get_instance_by_id(User, user_id)
-    #! Refactor this, remove recipebyid + consider additional adds
+
+    # Map endpoints to models
+    path_dict = {
+        "check_session": User,
+        "login": User,
+        "logout": User,
+        "signup": User,  
+        "profile": User,
+        "characters": Character,
+        "campaigns": Campaign,
+    }
+    if request.endpoint in path_dict:
+        id = request.view_args.get("id")
+        if id is not None:
+            record = get_instance_by_id(path_dict.get(request.endpoint), id)
+            setattr(g, "record", record)
+    g.time = time()
+
+
+@app.after_request
+def after_request(response):  #! notice the response argument automatically passsed in
+    diff = time() - g.time
+    print(f"Request took {diff} seconds")
+    response.headers["X-Response-Time"] = str(diff)
+    response.set_cookie("max-reads", "3")
+    return response
+
 
 # ? Base class for CRUD resource classes
 class BaseResource(Resource):
@@ -163,16 +198,11 @@ class Signup(Resource):
 class CheckSession(Resource):
 
     def get(self):
-        if (user_id := session.get("user_id")) is None:
-            return {"message": "Unauthorized"}, 401
-        user = get_instance_by_id(User, user_id)
-        if user is None:
+        if g.user is None:
             return {"message": "Unauthorized"}, 401
         return {
-            "id": user.id,
-            "username": user.username,
-            "bio": user.bio,
-            "image_url": user.image_url,
+            "id": g.user.id,
+            "username": g.user.username,
         }, 200
 
 class Login(Resource):
@@ -271,41 +301,18 @@ class UsersIndex(BaseResource):
     schema = UserUpdateSchema()
 
     def get(self):
-        # if (user_id := session.get("user_id")) is None:
-        # if user_id is None:
-        #     if g.user is None:
-        #         return {"message": "Unauthorized"}, 401
-        #     user_id = g.user.id
-
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        # id = g.user.id
         return super().get(condition=(User.id == g.user.id))
 
-    # def post(self):
-    #     # if (_ := session.get("user_id")) is None:
-    #     if g.user is None:
-    #         return {"message": "Unauthorized"}, 401
-    #     return super().post()
-
-    def delete(self, user_id=None):
+    def delete(self):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        if user_id is None:
-            user_id = g.user.id
         return super().delete(g.user.id)
 
     def patch(self, user_id=None):
-        # if g.user is None:
-        #     return {"message": "Unauthorized"}, 401
-        # if user_id is None:
-        #     user_id = g.user.id
-        # self.schema.context = {"is_update": True, "user_id": user_id}
-        # return super().patch(user_id)
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        if user_id is None:
-            user_id = g.user.id
 
         # Get the current password from the request data
         current_password = request.json.get('current_password')
