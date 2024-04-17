@@ -16,7 +16,7 @@ const CharacterDetail = ({ id, name, class_, race, alignment, age, alive, descri
       race: race || '',
       alignment: alignment || '',
       age: age || 0,
-      alive: alive || false,
+      alive: alive || true,
       description: description || '',
     },
     validationSchema: formSchema,

@@ -3,6 +3,7 @@ import { useCharacters } from '../context/CharacterProvider';
 import CharacterDetail from './CharacterDetail';
 import { useAuth } from '../context/AuthContext';
 import CharacterDetailForm from '../components/CharacterDetailForm';
+import '../styles/CharacterList.scss';
 
 const CharacterList = () => {
     const { characters, handlePatchCharacter, handleDeleteCharacter, handlePostCharacter, currentPage } = useCharacters();
@@ -23,6 +24,12 @@ const CharacterList = () => {
         setSelectedCharacter(character);
     }
 
+    const handleCancel = () => {
+        setShowForm(false);
+        setIsCreating(false);
+        setSelectedCharacter(null);
+    }
+
     const characterList = useMemo(() => {
         if (Array.isArray(characters)) {
             return characters.map(character => (
@@ -36,21 +43,34 @@ const CharacterList = () => {
             ));
         } else {
             console.error('Characters is not an array:', characters);
-            return null;
+            return null
         }
     }, [characters, handleDeleteCharacter]);
 
     if (!currentPage) {
-        return null;
+        return null
     }
 
     return (
-        <div>
+        <div className="character-list">
             {(user && characters) ? (
                 <>
                     <h1>Characters</h1>
-                    <button onClick={startCreate}>Create New Character</button>
-                    {showForm && <CharacterDetailForm character={isCreating ? null : selectedCharacter} handlePatchCharacter={handlePatchCharacter} handlePostCharacter={handlePostCharacter } />}
+                    {!showForm ? (
+                        <button onClick={startCreate}>Create New Character</button>
+                    ) : (
+                        <button onClick={handleCancel}>Cancel</button>
+                    )}
+                    {showForm && (
+                        <div className="form-container">
+                            <CharacterDetailForm
+                                character={isCreating ? null : selectedCharacter}
+                                handlePatchCharacter={handlePatchCharacter}
+                                handlePostCharacter={handlePostCharacter}
+                                handleCancel={handleCancel}
+                            />
+                        </div>
+                    )}
                     <ul>
                         {characterList}
                     </ul>

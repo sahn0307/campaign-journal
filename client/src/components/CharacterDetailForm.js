@@ -1,45 +1,46 @@
-import React, { useState, useEffect } from 'react'
-import { useFormik } from 'formik'
-import * as yup from 'yup'
-import { toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import styled from 'styled-components'
+import React, { useState, useEffect } from 'react';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import '../styles/CharacterDetailForm.scss';
 
-const CharacterDetailForm = ({ character, handlePatchCharacter, handlePostCharacter }) => {
-    const [formSchema, setFormSchema] = useState(null)
+const CharacterDetailForm = ({ character, handlePatchCharacter, handlePostCharacter, handleCancel }) => {
+  const [formSchema, setFormSchema] = useState(null);
 
-    const formik = useFormik({
-        initialValues: {
-            name: character ? character.name : '',
-            class_: character ? character.class_ : '',
-            race: character ? character.race : '',
-            alignment: character ? character.alignment : '',
-            age: character ? character.age : 0,
-            alive: character ? character.alive : false,
-            description: character ? character.description : '',
-        },
-        validationSchema: formSchema,
-        onSubmit: (values) => {
-            if (character) {
-                handlePatchCharacter(character.id, values)
-                .then(() => {
-                    toast.success('Character updated successfully')
-                })
-                .catch(handleError)
-            } else {
-                handlePostCharacter(values)
-                .then(() => {
-                    toast.success('Character created successfully')
-                })
-                .catch(handleError)
-            }
-        },
-        enableReinitialize: true,
-    })
+  const formik = useFormik({
+    initialValues: {
+      name: character ? character.name : '',
+      class_: character ? character.class_ : '',
+      race: character ? character.race : '',
+      alignment: character ? character.alignment : '',
+      age: character ? character.age : 0,
+      alive: character ? character.alive : false,
+      description: character ? character.description : '',
+    },
+    validationSchema: formSchema,
+    onSubmit: (values) => {
+      if (character) {
+        handlePatchCharacter(character.id, values)
+          .then(() => {
+            toast.success('Character updated successfully');
+          })
+          .catch(handleError);
+      } else {
+        handlePostCharacter(values)
+          .then(() => {
+            toast.success('Character created successfully');
+            handleCancel();
+          })
+          .catch(handleError);
+      }
+    },
+    enableReinitialize: true,
+  });
 
-    useEffect(() => {
+  useEffect(() => {
     setFormSchema(
-        yup.object().shape({
+      yup.object().shape({
         name: yup.string().required('Please enter a name').min(2),
         class_: yup.string(),
         race: yup.string(),
@@ -47,33 +48,33 @@ const CharacterDetailForm = ({ character, handlePatchCharacter, handlePostCharac
         age: yup.number().integer(),
         alive: yup.boolean(),
         description: yup.string(),
-        })
-    )
-    }, [])
+      })
+    );
+  }, []);
 
-    const handleAgeChange = (event) => {
+  const handleAgeChange = (event) => {
     let inputValue = event.target.value;
     if (inputValue.startsWith('0')) {
-        inputValue = inputValue.slice(1);
+      inputValue = inputValue.slice(1);
     }
     formik.setFieldValue('age', inputValue);
-}
+  };
 
-    useEffect(() => {
-        formik.setValues({
-            name: character ? character.name : '',
-            class_: character ? character.class_ : '',
-            race: character ? character.race : '',
-            alignment: character ? character.alignment : '',
-            age: character ? character.age : 0,
-            alive: character ? character.alive : false,
-            description: character ? character.description : '',
-        })
-    }, [character])
+  useEffect(() => {
+    formik.setValues({
+      name: character ? character.name : '',
+      class_: character ? character.class_ : '',
+      race: character ? character.race : '',
+      alignment: character ? character.alignment : '',
+      age: character ? character.age : 0,
+      alive: character ? character.alive : false,
+      description: character ? character.description : '',
+    });
+  }, [character]);
 
-    return (
-    <Form onSubmit={formik.handleSubmit}>
-        {/* Add the new fields here */}
+  return (
+    <div className="character-detail-wrapper">
+      <form onSubmit={formik.handleSubmit}>
         <label>Name</label>
         <input type="text" name="name" value={formik.values.name} onChange={formik.handleChange} />
         <label>Class</label>
@@ -89,38 +90,21 @@ const CharacterDetailForm = ({ character, handlePatchCharacter, handlePostCharac
         <label>Description</label>
         <input type="text" name="description" value={formik.values.description} onChange={formik.handleChange} />
         <button type="submit">{character ? 'Update Character' : 'Create Character'}</button>
-    </Form>
-    )
-}
+      </form>
+    </div>
+  );
+};
 
-export default CharacterDetailForm
+export default CharacterDetailForm;
 
 function handleError(error) {
-    if (typeof error.message === 'string') {
-        toast.error(error.message)
-    } else if (typeof error === 'object' && error !== null) {
-        for (let field in error) {
-            error[field].forEach((message) => {
-            toast.error(`${field}: ${message}`)
-            })
-        }
+  if (typeof error.message === 'string') {
+    toast.error(error.message);
+  } else if (typeof error === 'object' && error !== null) {
+    for (let field in error) {
+      error[field].forEach((message) => {
+        toast.error(`${field}: ${message}`);
+      });
     }
+  }
 }
-
-const Form = styled.form`
-    display:flex
-    flex-direction:column
-    width: 400px
-    margin:auto
-    font-family:Arial
-    font-size:30px
-    input[type=submit]{
-      background-color:#42ddf5
-      color: white
-      height:40px
-      font-family:Arial
-      font-size:30px
-      margin-top:10px
-      margin-bottom:10px
-    }
-  `
