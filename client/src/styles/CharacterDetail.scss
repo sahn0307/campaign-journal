@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative&display=swap');
+
+$primary-color: #4a4e69;
+$secondary-color: #9a8c98;
+$background-color: #22223b;
+$text-color: #fff;
+$button-color: #c9ada7;
+$button-hover-color: #a8858f;
+
+.character-detail-wrapper {
+  background-color: $primary-color;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  font-family: 'Roboto', sans-serif;
+  color: $text-color;
+
+  .character-info {
+    .character-info-item {
+      margin-bottom: 10px;
+
+      .label {
+        font-weight: bold;
+        margin-right: 10px;
+        font-size: 18px;
+      }
+
+      .value {
+        color: $text-color;
+        font-size: 18px;
+      }
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+
+      button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+
+        &.update-button {
+          background-color: $button-color;
+          color: $text-color;
+          margin-right: 10px;
+
+          &:hover {
+            background-color: $button-hover-color;
+          }
+        }
+
+        &.delete-button {
+          background-color: #ff6b6b;
+          color: $text-color;
+
+          &:hover {
+            background-color: #ff4757;
+          }
+        }
+      }
+    }
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: auto;
+    font-family: 'Roboto', sans-serif;
+    font-size: 18px;
+
+    label {
+      margin-bottom: 10px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    input[type='text'],
+    input[type='number'] {
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: $secondary-color;
+      color: $text-color;
+    }
+
+    input[type='checkbox'] {
+      margin-bottom: 20px;
+      transform: scale(1.5);
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+
+      button {
+        padding: 12px 24px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        border-radius: 5px;
+        border: none;
+        margin-left: 10px;
+        color: $text-color;
+
+        &[type='submit'] {
+          background-color: $button-color;
+
+          &:hover {
+            background-color: $button-hover-color;
+          }
+        }
+
+        &[type='button'] {
+          background-color: $secondary-color;
+
+          &:hover {
+            background-color: darken($secondary-color, 10%);
+          }
+        }
+      }
+    }
+  }
+}
