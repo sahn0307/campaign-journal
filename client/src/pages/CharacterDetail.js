@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/CharacterDetail.scss';
 
-const CharacterDetail = ({ id, name, class_, race, alignment, age, alive, description, handleDeleteCharacter, handlePatchCharacter }) => {
+const CharacterDetail = ({ id, name, class_, race, alignment, age, alive, description, campaigns, handleDeleteCharacter, handlePatchCharacter }) => {
   const [formSchema, setFormSchema] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -95,6 +95,10 @@ const CharacterDetail = ({ id, name, class_, race, alignment, age, alive, descri
             <span className="label">Description:</span>
             <span className="value">{description}</span>
           </div>
+          <div>
+          <span>Campaigns: {campaigns.map(campaign => <span key={campaign.gamemaster_id}>{campaign.name}</span>)}</span>
+          </div>
+          
           <div className="button-group">
             <button className="update-button" onClick={() => setIsEditMode(true)}>
               Update

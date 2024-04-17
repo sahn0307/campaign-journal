@@ -62,8 +62,6 @@ class Character(db.Model):
     character_campaigns = db.relationship("CharacterCampaign", back_populates="character")
     campaigns = association_proxy("character_campaigns", "campaign")
 
-    # serialize_rules = ("-user.characters", "-campaigns.characters")
-
 class Campaign(db.Model):
     __tablename__ = "campaigns"
 
@@ -74,9 +72,6 @@ class Campaign(db.Model):
 
     character_campaigns = db.relationship("CharacterCampaign", back_populates="campaign")
     characters = association_proxy("character_campaigns", "character")
-    
-    # serialize_rules = ("characters.campaigns",)
-
 
 class CharacterCampaign(db.Model):
     __tablename__ = "character_campaigns"
@@ -84,9 +79,13 @@ class CharacterCampaign(db.Model):
     character_id = db.Column(db.Integer, db.ForeignKey("characters.id"), primary_key=True)
     campaign_id = db.Column(db.Integer, db.ForeignKey("campaigns.id"), primary_key=True)
     gamemaster_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
     character = db.relationship("Character", back_populates="character_campaigns")
     campaign = db.relationship("Campaign", back_populates="character_campaigns")
     gamemaster = db.relationship("User", back_populates="character_campaigns")
+
+
+
 
     # serialize_rules = ("-campaign", "-gamemaster._password_hash", "campaign.character")
 

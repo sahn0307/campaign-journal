@@ -4,10 +4,9 @@ import * as yup from 'yup';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import styled from 'styled-components';
-import { useCampaigns } from '../context/CampaignProvider';
 import '../styles/CampaignDetail.scss';
-const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaign }) => {
-  const { handlePatchCampaign } = useCampaigns();
+
+const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaign, handlePatchCampaign }) => {
   const [formSchema, setFormSchema] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
 
