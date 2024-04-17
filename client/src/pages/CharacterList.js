@@ -29,6 +29,7 @@ const CharacterList = () => {
                 <CharacterDetail 
                     key={character.id} 
                     {...character}
+                    handlePatchCharacter={handlePatchCharacter}
                     handleDeleteCharacter={handleDeleteCharacter}
                     startUpdate={() => startUpdate(character)}
                 />

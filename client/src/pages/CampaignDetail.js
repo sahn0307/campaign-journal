@@ -4,10 +4,9 @@ import * as yup from 'yup';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import styled from 'styled-components';
-import { useCampaigns } from '../context/CampaignProvider';
 import '../styles/CampaignDetail.scss';
-const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaign }) => {
-  const { handlePatchCampaign } = useCampaigns();
+
+const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaign, handlePatchCampaign }) => {
   const [formSchema, setFormSchema] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -61,7 +60,7 @@ const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaig
           </div> 
           <div className="campaign-info-item">
             <span className="label">Active Characters:</span>
-            <span className="value">{characters.map(character => <span key={character.user_id}>{character.name}</span>)}</span>
+            <span className="value">{characters.map(character => <span key={character.id}>{character.name}</span>)}</span>
           </div>
           <div className="button-group">
             <button className="update-button" onClick={() => setIsEditMode(true)}>
