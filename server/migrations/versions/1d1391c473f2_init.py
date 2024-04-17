@@ -1,8 +1,8 @@
-"""initial migration
+"""init
 
-Revision ID: 6c14e62a7942
+Revision ID: 1d1391c473f2
 Revises: 
-Create Date: 2024-04-16 15:39:01.048595
+Create Date: 2024-04-17 11:42:09.474843
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6c14e62a7942'
+revision = '1d1391c473f2'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -50,11 +50,12 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('character_campaigns',
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('character_id', sa.Integer(), nullable=False),
     sa.Column('campaign_id', sa.Integer(), nullable=False),
     sa.Column('gamemaster_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['campaign_id'], ['campaigns.id'], name=op.f('fk_character_campaigns_campaign_id_campaigns')),
-    sa.ForeignKeyConstraint(['character_id'], ['characters.id'], name=op.f('fk_character_campaigns_character_id_characters')),
+    sa.ForeignKeyConstraint(['campaign_id'], ['campaigns.id'], name=op.f('fk_character_campaigns_campaign_id_campaigns'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['character_id'], ['characters.id'], name=op.f('fk_character_campaigns_character_id_characters'), ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['gamemaster_id'], ['users.id'], name=op.f('fk_character_campaigns_gamemaster_id_users')),
     sa.PrimaryKeyConstraint('character_id', 'campaign_id')
     )

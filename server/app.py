@@ -242,6 +242,8 @@ class CharacterIndex(BaseResource):
 
         # Delete or reassign all instances that reference the character
         # Assuming you have a relationship similar to CharacterCampaign for characters
+        #! Delete all CharacterCampaign instances that reference the character
+        CharacterCampaign.query.filter_by(character_id=character.id).delete()
         for cc in character.campaigns:
             db.session.delete(cc)
 
@@ -351,6 +353,8 @@ class CampaignsIndex(BaseResource):
             return {"message": "Campaign not found"}, 404
 
         # Delete or reassign all CharacterCampaign instances that reference the campaign
+        #! Delete all CharacterCampaign instances that reference the campaign
+        CharacterCampaign.query.filter_by(campaign_id=campaign.id).delete()
         for cc in campaign.characters:
             db.session.delete(cc)
 
