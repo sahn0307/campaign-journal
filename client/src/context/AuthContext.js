@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react'
+import React, { createContext, useState, useContext, useEffect} from 'react'
 
 const AuthContext = createContext()
 
@@ -11,15 +11,22 @@ export const AuthProvider = ({ children }) => {
     setUser(user)
   }
 
-  // const logout = () => {
-  //   fetch("/api/v1/logout", {method: "DELETE"})
-  //     .then(resp => {
-  //       if (resp.status === 204) {
-  //         updateUser(null)
-  //       }
-  //     })
-  //     .catch(err => console.log(err))
-  // }
+    useEffect(() => {
+        fetch('api/v1/check_session')
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Unauthorized');
+                }
+            })
+            .then(data => {
+                updateUser(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }, []);
 
   return (
     <AuthContext.Provider value={{ user, updateUser }}>

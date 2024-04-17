@@ -61,7 +61,7 @@ const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaig
           </div> 
           <div className="campaign-info-item">
             <span className="label">Active Characters:</span>
-            <span className="value">{characters.map(character => <span key={character.user_id}>{character.name}</span>)}</span>
+            <span className="value">{characters.map(character => <span key={character.id}>{character.name}</span>)}</span>
           </div>
           <div className="button-group">
             <button className="update-button" onClick={() => setIsEditMode(true)}>
