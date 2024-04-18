@@ -4,7 +4,6 @@
 
 # Remote library imports
 from flask import request, session, g
-import traceback
 from flask_restful import Resource
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -12,7 +11,6 @@ from marshmallow import Schema, fields, validates, ValidationError, pre_load
 from marshmallow.validate import Length
 from schemas import UserSchema, CharacterSchema, CampaignSchema, UserUpdateSchema
 from time import time
-from sqlalchemy.orm.exc import NoResultFound
 
 from config import app, db, api
 
@@ -94,41 +92,25 @@ def after_request(response):  #! notice the response argument automatically pass
 class BaseResource(Resource):
     model = None
     schema = None
-    character_schema = CharacterSchema()
 
-    def get(self, id=None, condition=None, include_characters=False):
+    def get(self, id=None, condition=None):
         try:
-            instances = None
             if id is None and condition is None:
                 instances = get_all(self.model)
+                return (
+                    self.schema.dump(instances, many=True),
+                    200,
+                )  # Use the schema to serialize the instances
             elif condition is not None:
                 instances = get_all_by_condition(self.model, condition)
-            else:
-                instance = get_instance_by_id(self.model, id)
-                if instance is None:
-                    return {"errors": f"{self.model.__name__} not found"}, 404
-
-            if include_characters:
-                characters = get_all(Character)
-                serialized_characters = self.character_schema.dump(
-                    characters, many=True
-                )
-                if instances is not None:
-                    return {
-                        "data": self.schema.dump(instances, many=True),
-                        "characters": serialized_characters,
-                    }, 200
-                else:
-                    return {
-                        "data": self.schema.dump(instance),
-                        "characters": serialized_characters,
-                    }, 200
-            elif instances is not None:
                 return (
                     self.schema.dump(instances, many=True),
                     200,
                 )  # Use the schema to serialize the instances
             else:
+                instance = get_instance_by_id(self.model, id)
+                if instance is None:
+                    return {"errors": f"{self.model.__name__} not found"}, 404
                 return (
                     self.schema.dump(instance),
                     200,
@@ -150,24 +132,19 @@ class BaseResource(Resource):
             db.session.rollback()
             return {"errors": str(e)}, 400
 
-
     def post(self):
+        # data = request.get_json()
         try:
             context = {"is_create": True}
             self.schema.context = context
-            json_data = request.json
-            if json_data is None:
-                return {"message": "Request data must be valid JSON"}, 400
-            if "characters" in json_data:
-                character_ids = [character["id"] for character in json_data["characters"]]
-                for id in character_ids:
-                    if not Character.query.filter_by(id=id).first():
-                        return {"message": f"Character with id {id} not found"}, 400
-            data = self.schema.load(json_data)
+            data = self.schema.load(
+                request.json
+            )  # Use the schema to deserialize the request data via load
             if "is_create" in data:
                 del data["is_create"]
-            if "user_id" in self.model.__table__.columns:
+            if 'user_id' in self.model.__table__.columns:
                 data["user_id"] = g.user.id
+            ipdb.set_trace()
             instance = self.model(**data)
             db.session.add(instance)
             db.session.commit()
@@ -181,6 +158,7 @@ class BaseResource(Resource):
         except IntegrityError:
             db.session.rollback()
             return {"message": "Invalid data"}, 422
+
     def patch(self):
         try:
             context = {"is_create": False, "id": g.user.id}
@@ -198,16 +176,18 @@ class BaseResource(Resource):
                     if campaign:
                         for key, value in campaign_data.items():
                             if key == "characters" and isinstance(value, list):
-                                character_ids = [character["id"] for character in value]
-                                try:
-                                    campaign_data["characters"] = [
-                                        Character.query.filter_by(id=id).one()
-                                        for id in character_ids
-                                    ]
-                                except NoResultFound:
-                                    return {
-                                        "message": "One or more characters not found"
-                                    }, 400
+                                for character_data in value:
+                                    character = get_one_by_condition(
+                                        Character,
+                                        condition=Character.id == character_data["id"],
+                                    )
+                                    if character:
+                                        for (
+                                            char_key,
+                                            char_value,
+                                        ) in character_data.items():
+                                            if char_key not in ["id"]:
+                                                setattr(character, char_key, char_value)
                             elif key not in ["id", "characters"]:
                                 setattr(campaign, key, value)
                 db.session.commit()
@@ -315,21 +295,22 @@ class CharacterIndex(BaseResource):
     def patch(self, character_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
+        character = get_one_by_condition(
+                Character, condition=Character.id == character_id
+            )
+        data = request.get_json()
 
-        try:
-            json_data = request.json
-            instance = self.model.query.get(character_id)
-            if instance is None:
-                return {"message": f"{self.model.__name__} not found"}, 404
-
-            for key, value in json_data.items():
-                setattr(instance, key, value)
-
+        if "campaigns" in data:
+            for campaign_data in data["campaigns"]:
+                campaign = get_one_by_condition(
+                    Campaign, condition=Campaign.id == campaign_data["id"]
+                )
+                if campaign:
+                    for key, value in campaign_data.items():
+                        setattr(campaign, key, value)
             db.session.commit()
-            return {"message": f"{self.model.__name__} updated"}, 200
-        except Exception as e:
-            db.session.rollback()
-            return {"message": str(e)}, 400
+        return super().patch()
+
 class UsersIndex(BaseResource):
     model = User
     schema = UserUpdateSchema()
@@ -372,7 +353,7 @@ class CampaignsIndex(BaseResource):
     def get(self, campaign_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        data = super().get(condition=(Campaign.gamemaster_id == g.user.id), include_characters=True)
+        data = super().get(condition=(Campaign.gamemaster_id == g.user.id))
 
         return data
 
@@ -384,68 +365,24 @@ class CampaignsIndex(BaseResource):
     def patch(self, campaign_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
+        data = request.get_json()
 
-        try:
-            json_data = request.json
-            instance = db.session.get(self.model, campaign_id)
-            if instance is None:
-                return {"message": f"{self.model.__name__} not found"}, 404
-
-            for key, value in json_data.items():
-                if key == "characters":
-                    # Remove all existing CharacterCampaign instances
-                    for character_campaign in instance.character_campaigns:
-                        db.session.delete(character_campaign)
-
-                    # Add new CharacterCampaign instances
-                    character_ids = [character["id"] for character in value]
-                    characters = Character.query.filter(
-                        Character.id.in_(character_ids)
-                    ).all()
-                    for character in characters:
-                        character_campaign = CharacterCampaign(campaign=instance, character=character)
-                        instance.character_campaigns.append(character_campaign)
-                else:
-                    setattr(instance, key, value)
-
+        if "characters" in data:
+            for character_data in data["characters"]:
+                character = get_one_by_condition(
+                    Character, condition=Character.id == character_data["id"]
+                )
+                if character:
+                    for key, value in character_data.items():
+                        setattr(character, key, value)
             db.session.commit()
-            return {"message": f"{self.model.__name__} updated"}, 200
-        except Exception as e:
-            db.session.rollback()
-            return {"message": str(e)}, 400
+        return super().patch(campaign_id)
 
     def post(self):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
+        return super().post()
 
-        try:
-            json_data = request.json
-            if json_data is None:
-                return {"message": "Request data must be valid JSON"}, 400
-
-            # Create the Campaign instance with the required attributes
-            instance = self.model(name=json_data.get('name'), description=json_data.get('description'), gamemaster_id=json_data.get('gamemaster_id'), log=json_data.get('log'))
-
-            for key, value in json_data.items():
-                if key == "characters":
-                    character_ids = [character["id"] for character in value]
-                    characters = Character.query.filter(
-                        Character.id.in_(character_ids)
-                    ).all()
-                    # Create CharacterCampaign instances for each character and add them to the character_campaigns relationship
-                    for character in characters:
-                        character_campaign = CharacterCampaign(campaign=instance, character=character)
-                        instance.character_campaigns.append(character_campaign)
-                else:
-                    setattr(instance, key, value)
-
-            db.session.add(instance)
-            db.session.commit()
-            return {"message": f"{self.model.__name__} created"}, 201
-        except Exception as e:
-            db.session.rollback()
-            print(traceback.format_exc())
-            return {"message": str(e)}, 400
 
 api.add_resource(Signup, "/signup", endpoint="signup")
 api.add_resource(CheckSession, "/check_session", endpoint="check_session")

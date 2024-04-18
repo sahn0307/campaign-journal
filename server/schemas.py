@@ -3,7 +3,6 @@ from marshmallow.validate import Length
 from models import db, User, Campaign, Character
 from sqlalchemy import select
 
-
 class UserSchema(Schema):
     id = fields.Int(dump_only=True)
     username = fields.Str(
@@ -16,14 +15,8 @@ class UserSchema(Schema):
         required=True,
         metadata={"description": "The password of the user"},
     )
-    email = fields.Str(
-        metadata={"description": "The email of the user"}
-    )  #! NEED REGEX!
-    game_master = fields.Boolean(
-        metadata={
-            "description": "The option to determine if this user is a game master or not"
-        }
-    )
+    email = fields.Str(metadata={"description": "The email of the user"}) #! NEED REGEX! 
+    game_master = fields.Boolean(metadata={"description": "The option to determine if this user is a game master or not"})
 
     @validates("username")
     def validate_username(self, value):
@@ -61,14 +54,8 @@ class UserUpdateSchema(Schema):
         validate=Length(min=2),
         metadata={"description": "The unique username of the user"},
     )
-    email = fields.Str(
-        metadata={"description": "The email of the user"}
-    )  #! NEED REGEX!
-    game_master = fields.Boolean(
-        metadata={
-            "description": "The option to determine if this user is a game master or not"
-        }
-    )
+    email = fields.Str(metadata={"description": "The email of the user"}) #! NEED REGEX! 
+    game_master = fields.Boolean(metadata={"description": "The option to determine if this user is a game master or not"})
     password_hash = fields.Str(
         validate=Length(min=1),
         metadata={"description": "The new password of the user"},
@@ -80,11 +67,7 @@ class UserUpdateSchema(Schema):
     @validates("username")
     def validate_username(self, value):
         existing_user = get_one_by_condition(User, User.username == value)
-        if (
-            self.context.get("is_update")
-            and existing_user
-            and existing_user.id != self.context.get("user_id")
-        ):
+        if self.context.get("is_update") and existing_user and existing_user.id != self.context.get("user_id"):
             raise ValidationError("Username already exists")
 
     @validates("email")
@@ -109,7 +92,6 @@ class UserUpdateSchema(Schema):
                 data[key] = value.strip()
         return data
 
-
 class CharacterSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(
@@ -121,18 +103,10 @@ class CharacterSchema(Schema):
     race = fields.Str(metadata={"description": "The race of the character"})
     alignment = fields.Str(metadata={"description": "The alignment of the character"})
     age = fields.Int(metadata={"description": "The age of the character"})
-    alive = fields.Boolean(
-        metadata={"description": "The alive status of the character"}
-    )
-    description = fields.Str(
-        metadata={"description": "The description of the character"}
-    )
-    user_id = fields.Int(
-        metadata={"description": "The user id associated with the character"}
-    )
-    campaigns = fields.Nested(
-        "CampaignSchema", many=True, exclude=("characters",), load_only=True
-    )
+    alive = fields.Boolean(metadata={"description": "The alive status of the character"})
+    description = fields.Str(metadata={"description": "The description of the character"})
+    user_id = fields.Int(metadata={"description": "The user id associated with the character"})
+    campaigns = fields.Nested("CampaignSchema", many=True, exclude=("characters",), load_only=True)
 
     @validates("name")
     def validate_name(self, value):
@@ -155,8 +129,8 @@ class CampaignSchema(Schema):
     gamemaster_id = fields.Int(
         metadata={"description": "The ID of the game master of the campaign"}
     )
-    characters = fields.Nested(CharacterSchema, only=("id", "name"), many=True)
-
+    characters = fields.Nested(CharacterSchema, only = ("id", "name") , many=True)
+    
     log = fields.Str(metadata={"description": "The log of the campaign"})
 
     @validates("name")
@@ -165,9 +139,7 @@ class CampaignSchema(Schema):
             if get_one_by_condition(Campaign, Campaign.name == value):
                 raise ValidationError("Campaign name already exists")
         else:  # This is the update case
-            if not get_one_by_condition(
-                Campaign, Campaign.id == self.context.get("id")
-            ):
+            if not get_one_by_condition(Campaign, Campaign.id == self.context.get("id")):
                 raise ValidationError("Campaign does not exist")
 
     @pre_load
@@ -177,16 +149,13 @@ class CampaignSchema(Schema):
                 data[key] = value.strip()
         return data
 
-
 #! Helper Functions
-
 
 def get_one_by_condition(model, condition):
     # stmt = select(model).where(condition)
     # result = db.session.execute(stmt)
     # return result.scalars().first()
     return execute_query(select(model).where(condition)).first()
-
 
 def execute_query(query):
     return db.session.execute(query).scalars()

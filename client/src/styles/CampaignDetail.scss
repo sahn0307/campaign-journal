@@ -124,24 +124,4 @@ $button-hover-color: #372d6b;
       }
     }
   }
-
-}
-.campaign-edit-wrapper {
-  display: flex;
-  justify-content: space-between;
-}
-
-.campaign-edit-form {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.character-box {
-  background-color: #f0f0f0; // light gray background
-  border: 1px solid #ccc; // gray border
-  border-radius: 5px; // rounded corners
-  padding: 10px; // space inside the box
-  margin-bottom: 10px; // space between boxes
-  text-align: center; // center the text
 }
