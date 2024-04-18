@@ -69,6 +69,7 @@ class Campaign(db.Model):
     name = db.Column(db.String(64), nullable=False)
     description = db.Column(db.Text)
     gamemaster_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    log = db.Column(db.Text(1000))
 
     character_campaigns = db.relationship("CharacterCampaign", back_populates="campaign")
     characters = association_proxy("character_campaigns", "character")
