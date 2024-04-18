@@ -24,11 +24,13 @@ export const useFetchJSON = () => {
     }
 
     const postJSON = async (url, formData) => {
+        debugger
         return await handleRequest(url, 'POST', formData)
     }
 
-    const patchJSON = async (url, idOrIdEditingMode, formData) => {
-        return await handleRequest(`${url}/${idOrIdEditingMode}`, 'PATCH', formData)
+    const patchJSON = async (url, formData) => {
+        
+        return await handleRequest(`${url}`, 'PATCH', formData)
     }
 
     const deleteJSON = async (url) => {
@@ -39,12 +41,12 @@ export const useFetchJSON = () => {
     return { postJSON, patchJSON, deleteJSON }
 }
 
-export const addIdPlusOneLastArrayToNewElement = (currentStateVariable, formData) => {
-    const lastVariableArray = currentStateVariable.slice(-1)
-    const id = lastVariableArray.length
-        ? Number(lastVariableArray[0].id) + 1
-        : uuidv4()
-    return [...currentStateVariable, { id, ...formData }]
-}
+// export const addIdPlusOneLastArrayToNewElement = (currentStateVariable, formData) => {
+//     const lastVariableArray = currentStateVariable.slice(-1)
+//     const id = lastVariableArray.length
+//         ? Number(lastVariableArray[0].id) + 1
+//         : uuidv4()
+//     return [...currentStateVariable, { id, ...formData }]
+// }
 
 export default useFetchJSON
