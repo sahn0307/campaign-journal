@@ -1,0 +1,40 @@
+// Variables
+$primary-color: #333;
+$secondary-color: #fff;
+$error-color: #ff6b6b;
+$button-color: #094750;
+
+.err-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: $primary-color;
+  color: $secondary-color;
+
+  .err {
+    font-size: 4rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+  }
+
+  button {
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 5px;
+    background-color: $button-color;
+    color: $secondary-color;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: darken($button-color, 10%);
+    }
+
+    &:not(:last-child) {
+      margin-right: 1rem;
+    }
+  }
+}
