@@ -7,11 +7,11 @@ import styled from 'styled-components';
 import '../styles/CampaignDetail.scss';
 
 
-const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaign, handlePatchCampaign }) => {
+const CampaignDetail = ({ id, name, description, log, characters, handleDeleteCampaign, handlePatchCampaign }) => {
   const [formSchema, setFormSchema] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const charactersList = characters.map(character => character.name).join(', ')
+//   const charactersList = characters.map(character => character.name).join(', ')
 
   useEffect(() => {
     setFormSchema(
@@ -19,7 +19,8 @@ const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaig
         name: yup.string().required('Please enter a name'),
         description: yup.string().required('Please enter a description'),
         // characters: yup.array().of(yup.string()),
-        characters: yup.string()
+        // characters: yup.string(),
+        log: yup.string(),
       })
     );
   }, []);
@@ -28,8 +29,9 @@ const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaig
     initialValues: {
       name: name,
       description: description,
-      charactersList: characters.map(character => character.name).join(', '),
-      characters: characters,
+    //   charactersList: characters.map(character => character.name).join(', '),
+    //   characters: characters,
+      log: log,
     },
     validationSchema: formSchema,
     onSubmit: (values) => {
@@ -66,8 +68,12 @@ const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaig
             <span className="value">{description}</span>
           </div> 
           <div className="campaign-info-item">
-            <span className="label">Active Characters:</span>
-            <span className="value">{characters.map(character => <span key={character.id}>{character.name}</span>)}</span>
+            <span className="label">Log:</span>
+            <span className="value">{log}</span>
+          </div> 
+          <div className="campaign-info-item">
+            {/* <span className="label">Active Characters:</span>
+            <span className="value">{characters.map(character => <span key={character.id}>{character.name}</span>)}</span> */}
           </div>
           <div className="button-group">
             <button className="update-button" onClick={() => setIsEditMode(true)}>
@@ -94,21 +100,28 @@ const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaig
             value={formik.values.description}
             onChange={formik.handleChange}
           />
-          <label>Add Character to Campaign:</label>
+           <label>Log:</label>
+          <input
+            type="text"
+            name="log"
+            value={formik.values.log}
+            onChange={formik.handleChange}
+          />
+          {/* <label>Add Character to Campaign:</label>
           <input
             type="text"
             name="characters"
             value={formik.values.characters}
             onChange={formik.handleChange}
-          />
-          <label>Active Characters:</label>
+          /> */}
+          {/* <label>Active Characters:</label>
           <input
             type="text"
             name="characterslist"
             value={formik.values.charactersList}
             readOnly>
 
-            </input>
+            </input> */}
           <div className="button-group">
             <button type="submit">Update Campaign</button>
             <button type="button" onClick={() => setIsEditMode(false)}>
