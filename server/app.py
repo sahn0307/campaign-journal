@@ -290,17 +290,6 @@ class CharacterIndex(BaseResource):
     def delete(self, character_id):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        # Get the character
-        # character = get_one_by_condition(Character, condition=Character.user_id == g.user.id)
-
-        # # cc = CharacterCampaign.query.filter_by(character_id=character.id).delete()
-        # for cc in character.campaigns:
-        #     db.session.delete(cc)
-
-        # # Commit the changes
-        # db.session.commit()
-
-        # Now you can delete the character
         return super().delete(character_id)
 
     def patch(self, character_id=None):
@@ -321,7 +310,6 @@ class CharacterIndex(BaseResource):
                         setattr(campaign, key, value)
             db.session.commit()
         return super().patch()
-
 
 class UsersIndex(BaseResource):
     model = User
@@ -377,17 +365,6 @@ class CampaignsIndex(BaseResource):
     def patch(self, campaign_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        # if campaign_id is None:
-        #     campaign_id = super().get(condition=(Campaign.gamemaster_id == g.user.id))
-        # if campaign_id is None:
-        #     return {"message": "Campaign not found"}, 404
-        # data = request.json
-        # data["gamemaster_id"] = g.user.id
-        # try:
-        #     self.schema.context = {"is_create": False, "id": campaign_id}
-        #     data = self.schema.load(data)
-        # except ValidationError as err:
-        #     return err.messages, 400
         data = request.get_json()
 
         if "characters" in data:
@@ -405,20 +382,6 @@ class CampaignsIndex(BaseResource):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
         return super().post()
-
-    # def post(self, data=None):
-    #     if g.user is None:
-    #         return {"message": "Unauthorized"}, 401
-    #     data = request.json
-    #     if data is None:
-    #         return {"message": "No data provided"}, 400
-    #     data["gamemaster_id"] = g.user.id
-    #     try:
-    #         self.schema.context = {"is_create": True}
-    #         data = self.schema.load(data)
-    #     except ValidationError as err:
-    #         return err.messages, 400
-    #     return super().post(data)
 
 
 api.add_resource(Signup, "/signup", endpoint="signup")
