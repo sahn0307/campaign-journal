@@ -36,7 +36,7 @@ const CharacterProvider = ({ children }) => {
     const handlePatchCharacter = async (id, updates) => {
         setCharacters(characters.map(character => character.id === id ? { ...character, ...updates } : character));
         try {
-            const result = await patchJSON(`/api/v1/${currentPage}/${id}`, updates);
+            const result = await patchJSON(`/api/v1/${currentPage}`, id, updates);
             if (!result.ok) {
                 throw new Error('Patch failed: status: ' + result.status);
             }

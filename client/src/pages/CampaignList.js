@@ -1,56 +1,82 @@
-import React, {  useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useCampaigns } from '../context/CampaignProvider';
 import CampaignDetail from './CampaignDetail';
-// import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import CampaignDetailForm from '../components/CampaignDetailForm';
 import '../styles/CampaignList.scss';
 
 const CampaignList = () => {
-  const { campaigns, handleDeleteCampaign, handlePostCampaign, handlePatchCampaign } = useCampaigns()
-  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const { campaigns, handlePatchCampaign, handleDeleteCampaign, handlePostCampaign, currentPage } = useCampaigns();
+  const { user } = useAuth();
+  const [showForm, setShowForm] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-// console.log(`campaigns: ${JSON.stringify(campaigns, null, 2)}`)
-// console.log(`allchars: ${JSON.stringify(allCharacters, null, 2)}`)
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
 
   const startCreate = () => {
+    setShowForm(true);
     setIsCreating(true);
     setSelectedCampaign(null);
   };
 
   const startUpdate = (campaign) => {
+    setShowForm(true);
     setIsCreating(false);
     setSelectedCampaign(campaign);
   };
 
   const handleCancel = () => {
+    setShowForm(false);
     setIsCreating(false);
     setSelectedCampaign(null);
   };
 
-  return (
-    <div>
-      <h1>Campaigns</h1>
-      {!selectedCampaign ? (
-        <button onClick={startCreate}>Create New Campaign</button>
-      ) : (
-        <button onClick={handleCancel}>Cancel</button>
-      )}
-      { (selectedCampaign || isCreating) && (
-        <CampaignDetailForm
-          campaign={selectedCampaign || {}}
-          handleCancel={handleCancel}
-          handlePostCampaign={handlePostCampaign}
-          handlePatchCampaign={handlePatchCampaign}
-        />
-      )}
-      {!selectedCampaign && campaigns.map((campaign) => (
+  const campaignList = useMemo(() => {
+    if (Array.isArray(campaigns)) {
+      return campaigns.map((campaign) => (
         <CampaignDetail
           key={campaign.id}
-          campaign={campaign}
-          startUpdate={startUpdate}
+          {...campaign}
+          handlePatchCampaign={handlePatchCampaign}
           handleDeleteCampaign={handleDeleteCampaign}
+          startUpdate={() => startUpdate(campaign)}
         />
-      ))}
+      ));
+    } else {
+      console.error('Campaigns is not an array:', campaigns);
+      return null;
+    }
+  }, [campaigns, handlePatchCampaign, handleDeleteCampaign]);
+
+  if (!currentPage) {
+    return null;
+  }
+
+  return (
+    <div className="campaign-list">
+      {user && campaigns ? (
+        <>
+          <h1>Campaigns</h1>
+          {!showForm ? (
+            <button onClick={startCreate}>Create New Campaign</button>
+          ) : (
+            <button onClick={handleCancel}>Cancel</button>
+          )}
+          {showForm && (
+            <div className="form-container">
+              <CampaignDetailForm
+                campaign={isCreating ? null : selectedCampaign}
+                onCancel={handleCancel}
+                handlePostCampaign={handlePostCampaign}
+                handlePatchCampaign={handlePatchCampaign}
+                handleCancel={handleCancel}
+              />
+            </div>
+          )}
+          <ul>{campaignList}</ul>
+        </>
+      ) : (
+        <h1>You need to log in to view this page!</h1>
+      )}
     </div>
   );
 };
