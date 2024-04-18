@@ -59,7 +59,9 @@ class Character(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
     user = db.relationship("User", back_populates="characters")
-    character_campaigns = db.relationship("CharacterCampaign", back_populates="character")
+    character_campaigns = db.relationship(
+        "CharacterCampaign", back_populates="character", cascade="all,delete"
+    )
     campaigns = association_proxy("character_campaigns", "campaign")
 
 class Campaign(db.Model):
@@ -70,8 +72,10 @@ class Campaign(db.Model):
     description = db.Column(db.Text)
     gamemaster_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    character_campaigns = db.relationship("CharacterCampaign", back_populates="campaign")
-    characters = association_proxy("character_campaigns", "character")
+    character_campaigns = db.relationship("CharacterCampaign", back_populates="campaign", cascade="all,delete")
+    characters = association_proxy(
+        "character_campaigns", "character"
+    )
 
 class CharacterCampaign(db.Model):
     __tablename__ = "character_campaigns"

@@ -115,25 +115,36 @@ class BaseResource(Resource):
                     self.schema.dump(instance),
                     200,
                 )  # Use the schema to serialize the instance
-        except SQLAlchemyError as e:
+        except Exception as e:
             db.session.rollback()
-            return {"errors": str(e)}, 500
+            return {"errors": str(e)}, 400
 
-    def delete(self, id):
+    def delete(self, id=None):
         try:
             instance = get_instance_by_id(self.model, id)
+            if self.model == Campaign and hasattr(instance, 'character_campaigns'):
+                for cc in instance.character_campaigns:
+                    db.session.delete(cc)
             db.session.delete(instance)
             db.session.commit()
             return "", 204
-        except SQLAlchemyError as e:
+        except Exception as e:
             db.session.rollback()
-            return {"errors": str(e)}, 500
+            return {"errors": str(e)}, 400
 
-    def post(self, data):
+    def post(self):
+        # data = request.get_json()
         try:
+            context = {"is_create": True}
+            self.schema.context = context
             data = self.schema.load(
                 request.json
             )  # Use the schema to deserialize the request data via load
+            if "is_create" in data:
+                del data["is_create"]
+            if 'user_id' in self.model.__table__.columns:
+                data["user_id"] = g.user.id
+            ipdb.set_trace()
             instance = self.model(**data)
             db.session.add(instance)
             db.session.commit()
@@ -142,20 +153,48 @@ class BaseResource(Resource):
                 201,
             )  # Use the schema to serialize the instance
         except ValidationError as e:
+            db.session.rollback()
             return {"message": str(e)}, 422
         except IntegrityError:
             db.session.rollback()
             return {"message": "Invalid data"}, 422
 
-    def patch(self, id):
+    def patch(self):
         try:
-            data = request.json
+            context = {"is_create": False, "id": g.user.id}
+            self.schema.context = context
             data = self.schema.load(
-                data
+                request.json
             )  # Use the schema to deserialize the request data
-            instance = get_instance_by_id(self.model, id)
+            instance = get_instance_by_id(self.model, g.user.id)
+
+            if "campaigns" in data and isinstance(data["campaigns"], list):
+                for campaign_data in data["campaigns"]:
+                    campaign = get_one_by_condition(
+                        Campaign, condition=Campaign.id == campaign_data["id"]
+                    )
+                    if campaign:
+                        for key, value in campaign_data.items():
+                            if key == "characters" and isinstance(value, list):
+                                for character_data in value:
+                                    character = get_one_by_condition(
+                                        Character,
+                                        condition=Character.id == character_data["id"],
+                                    )
+                                    if character:
+                                        for (
+                                            char_key,
+                                            char_value,
+                                        ) in character_data.items():
+                                            if char_key not in ["id"]:
+                                                setattr(character, char_key, char_value)
+                            elif key not in ["id", "characters"]:
+                                setattr(campaign, key, value)
+                db.session.commit()
+
             for key, value in data.items():
-                setattr(instance, key, value)
+                if key != "campaigns":
+                    setattr(instance, key, value)
             db.session.commit()
             return (
                 self.schema.dump(instance),
@@ -167,14 +206,15 @@ class BaseResource(Resource):
             db.session.rollback()
             return {"message": "Invalid data"}, 422
 
+
 # ? User Account Signup/Login/Logout/Session Resources
 class Signup(Resource):
     model = User
     schema = UserSchema()
 
     def post(self):
-        data = request.json
         self.schema.context = {"is_signup": True}
+        data = request.get_json()
 
         try:
             data = self.schema.load(data)
@@ -210,12 +250,11 @@ class Login(Resource):
     schema = UserSchema()
 
     def post(self):
-        data = request.json
+        data = request.get_json()
         try:
             data = self.schema.load(data)
         except ValidationError as err:
             return err.messages, 422
-        data = self.schema.load(data)
         username = data.get("username")
         password = data.get("password_hash")
         user = get_one_by_condition(User, User.username == username)
@@ -239,7 +278,6 @@ class CharacterIndex(BaseResource):
     schema = CharacterSchema()
 
     def get(self):
-        # if (user_id := session.get("user_id")) is None:
         if g.user is None:
             return {"message": "Unauthorized"}, 401
         return super().get(condition=Character.user_id == g.user.id)
@@ -247,39 +285,20 @@ class CharacterIndex(BaseResource):
     def post(self):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        data = request.json
-        if data is None:
-            return {"message": "No data provided"}, 400
-        data["user_id"] = g.user.id
-        try:
-            self.schema.context = {"is_create": True}
-            data = self.schema.load(data)
-        except ValidationError as err:
-            return err.messages, 400
-        return super().post(data)
+        return super().post()
 
-    def delete(self, character_id=None):
+    def delete(self, character_id):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        if character_id is None:
-            character_id = g.user.id
-
         # Get the character
-        character = get_instance_by_id(Character, character_id)
-        # Check if the character exists
-        if not character:
-            return {"message": "Character not found"}, 404
+        # character = get_one_by_condition(Character, condition=Character.user_id == g.user.id)
 
-        # Delete or reassign all instances that reference the character
-        # Assuming you have a relationship similar to CharacterCampaign for characters
-        #! Other way to do this
-        CharacterCampaign.query.filter_by(character_id=character.id).delete()
-        # cc = get_all_by_condition(CharacterCampaign, CharacterCampaign.character_id == character.id)
+        # # cc = CharacterCampaign.query.filter_by(character_id=character.id).delete()
         # for cc in character.campaigns:
         #     db.session.delete(cc)
 
-        # Commit the changes
-        db.session.commit()
+        # # Commit the changes
+        # db.session.commit()
 
         # Now you can delete the character
         return super().delete(character_id)
@@ -287,16 +306,21 @@ class CharacterIndex(BaseResource):
     def patch(self, character_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        if character_id is None:
-            character_id = g.user.id
-        data = request.json
-        data["user_id"] = g.user.id
-        try:
-            self.schema.context = {"is_create": False, "id": character_id}
-            data = self.schema.load(data)
-        except ValidationError as err:
-            return err.messages, 400
-        return super().patch(character_id)
+        character = get_one_by_condition(
+                Character, condition=Character.id == character_id
+            )
+        data = request.get_json()
+
+        if "campaigns" in data:
+            for campaign_data in data["campaigns"]:
+                campaign = get_one_by_condition(
+                    Campaign, condition=Campaign.id == campaign_data["id"]
+                )
+                if campaign:
+                    for key, value in campaign_data.items():
+                        setattr(campaign, key, value)
+            db.session.commit()
+        return super().patch()
 
 
 class UsersIndex(BaseResource):
@@ -342,66 +366,59 @@ class CampaignsIndex(BaseResource):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
         data = super().get(condition=(Campaign.gamemaster_id == g.user.id))
-        # If you want to validate or manipulate the data, you can do so here
-        # For example, you can load the data into the schema and then dump it again
-        # data = self.schema.load(data)
-        # data = self.schema.dump(data)
+
         return data
 
     def delete(self, campaign_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        if campaign_id is None:
-            campaign_id = g.user.id
-
-        # Get the campaign
-        campaign = get_instance_by_id(Campaign, campaign_id)
-        # Check if the campaign exists
-        if not campaign:
-            return {"message": "Campaign not found"}, 404
-
-        # Delete or reassign all CharacterCampaign instances that reference the campaign
-        #! Other way to do this
-        CharacterCampaign.query.filter_by(campaign_id=campaign.id).delete()
-        # cc = get_all_by_condition(CharacterCampaign, CharacterCampaign.campaign_id == campaign.id)
-        # for cc in campaign.characters:
-        #     db.session.delete(cc)
-
-        # Commit the changes
-        db.session.commit()
-
-        # Now you can delete the campaign
         return super().delete(campaign_id)
 
     def patch(self, campaign_id=None):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        if campaign_id is None:
-            campaign_id = super().get(condition=(Campaign.gamemaster_id == g.user.id))
-        if campaign_id is None:
-            return {"message": "Campaign not found"}, 404
-        data = request.json
-        data["gamemaster_id"] = g.user.id
-        try:
-            self.schema.context = {"is_create": False, "id": campaign_id}
-            data = self.schema.load(data)
-        except ValidationError as err:
-            return err.messages, 400
+        # if campaign_id is None:
+        #     campaign_id = super().get(condition=(Campaign.gamemaster_id == g.user.id))
+        # if campaign_id is None:
+        #     return {"message": "Campaign not found"}, 404
+        # data = request.json
+        # data["gamemaster_id"] = g.user.id
+        # try:
+        #     self.schema.context = {"is_create": False, "id": campaign_id}
+        #     data = self.schema.load(data)
+        # except ValidationError as err:
+        #     return err.messages, 400
+        data = request.get_json()
+
+        if "characters" in data:
+            for character_data in data["characters"]:
+                character = get_one_by_condition(
+                    Character, condition=Character.id == character_data["id"]
+                )
+                if character:
+                    for key, value in character_data.items():
+                        setattr(character, key, value)
+            db.session.commit()
         return super().patch(campaign_id)
 
-    def post(self, data=None):
+    def post(self):
         if g.user is None:
             return {"message": "Unauthorized"}, 401
-        data = request.json
-        if data is None:
-            return {"message": "No data provided"}, 400
-        data["gamemaster_id"] = g.user.id
-        try:
-            self.schema.context = {"is_create": True}
-            data = self.schema.load(data)
-        except ValidationError as err:
-            return err.messages, 400
-        return super().post(data)
+        return super().post()
+
+    # def post(self, data=None):
+    #     if g.user is None:
+    #         return {"message": "Unauthorized"}, 401
+    #     data = request.json
+    #     if data is None:
+    #         return {"message": "No data provided"}, 400
+    #     data["gamemaster_id"] = g.user.id
+    #     try:
+    #         self.schema.context = {"is_create": True}
+    #         data = self.schema.load(data)
+    #     except ValidationError as err:
+    #         return err.messages, 400
+    #     return super().post(data)
 
 
 api.add_resource(Signup, "/signup", endpoint="signup")

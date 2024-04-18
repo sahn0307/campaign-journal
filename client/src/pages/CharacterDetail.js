@@ -96,7 +96,7 @@ const CharacterDetail = ({ id, name, class_, race, alignment, age, alive, descri
             <span className="value">{description}</span>
           </div>
           <div>
-          <span>Campaigns: {campaigns.map(campaign => <span key={campaign.gamemaster_id}>{campaign.name}</span>)}</span>
+          <span>Campaigns: {campaigns && campaigns.map(campaign => <span key={campaign.gamemaster_id}>{campaign.name}</span>)}</span>
           </div>
           
           <div className="button-group">

@@ -91,6 +91,7 @@ class UserUpdateSchema(Schema):
             if isinstance(value, str):
                 data[key] = value.strip()
         return data
+
 class CharacterSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str(
@@ -105,23 +106,15 @@ class CharacterSchema(Schema):
     alive = fields.Boolean(metadata={"description": "The alive status of the character"})
     description = fields.Str(metadata={"description": "The description of the character"})
     user_id = fields.Int(metadata={"description": "The user id associated with the character"})
-    campaigns = fields.Nested("CampaignSchema", many=True, exclude=("characters",))
+    campaigns = fields.Nested("CampaignSchema", many=True, exclude=("characters",), load_only=True)
 
     @validates("name")
     def validate_name(self, value):
         if self.context.get("is_create"):
             if get_one_by_condition(Character, Character.name == value):
                 raise ValidationError("Character name already exists")
-        else:  # This is the update case
-            if not get_one_by_condition(Character, Character.id == self.context.get("id")):
-                raise ValidationError("Character does not exist")
-
-    @pre_load
-    def strip_strings(self, data, character_id = None, **kwargs):
-        for key, value in data.items():
-            if isinstance(value, str):
-                data[key] = value.strip()
-        return data
+        else:
+            pass
 
 class CampaignSchema(Schema):
     id = fields.Int(dump_only=True)
