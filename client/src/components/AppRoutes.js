@@ -9,7 +9,7 @@ import UserProfileList from '../pages/UserProfileList'
 import UserProvider from '../context/UserProvider'
 import CampaignProvider from '../context/CampaignProvider'
 import CharacterProvider from '../context/CharacterProvider'
-
+import ErrorPage from '../pages/ErrorPage'
 function AppRoutes() {
 
   return (
@@ -46,6 +46,8 @@ function AppRoutes() {
           <UserProfileList />
         </UserProvider>
       } />
+
+      <Route path="*" element={<ErrorPage />} />
     </Routes>
   )
 }
