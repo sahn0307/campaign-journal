@@ -66,7 +66,9 @@ class Character(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
     user = db.relationship("User", back_populates="characters")
-    character_campaigns = db.relationship("CharacterCampaign", back_populates="character")
+    character_campaigns = db.relationship(
+        "CharacterCampaign", back_populates="character", cascade="all,delete"
+    )
     campaigns = association_proxy("character_campaigns", "campaign")
 
     @validates("name")
@@ -84,8 +86,10 @@ class Campaign(db.Model):
     gamemaster_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     log = db.Column(db.Text(1000))
 
-    character_campaigns = db.relationship("CharacterCampaign", back_populates="campaign")
-    characters = association_proxy("character_campaigns", "character")
+    character_campaigns = db.relationship("CharacterCampaign", back_populates="campaign", cascade="all,delete")
+    characters = association_proxy(
+        "character_campaigns", "character"
+    )
 
     @validates("name")
     def validate_name(self, key, name):

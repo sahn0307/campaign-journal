@@ -32,6 +32,7 @@ export const useFetchJSON = () => {
     }
 
     const deleteJSON = async (url) => {
+        debugger
         return await handleRequest(`${url}`, 'DELETE')
     }
 
