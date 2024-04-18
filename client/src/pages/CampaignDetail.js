@@ -6,15 +6,20 @@ import 'react-toastify/dist/ReactToastify.css';
 import styled from 'styled-components';
 import '../styles/CampaignDetail.scss';
 
+
 const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaign, handlePatchCampaign }) => {
   const [formSchema, setFormSchema] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+
+  const charactersList = characters.map(character => character.name).join(', ')
 
   useEffect(() => {
     setFormSchema(
       yup.object().shape({
         name: yup.string().required('Please enter a name'),
         description: yup.string().required('Please enter a description'),
+        // characters: yup.array().of(yup.string()),
+        characters: yup.string()
       })
     );
   }, []);
@@ -23,6 +28,8 @@ const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaig
     initialValues: {
       name: name,
       description: description,
+      charactersList: characters.map(character => character.name).join(', '),
+      characters: characters,
     },
     validationSchema: formSchema,
     onSubmit: (values) => {
@@ -73,20 +80,35 @@ const CampaignDetail = ({ id, name, description, characters, handleDeleteCampaig
         </div>
       ) : (
         <form onSubmit={formik.handleSubmit}>
-          <label>Name</label>
+          <label>Name:</label>
           <input
             type="text"
             name="name"
             value={formik.values.name}
             onChange={formik.handleChange}
           />
-          <label>Description</label>
+          <label>Description:</label>
           <input
             type="text"
             name="description"
             value={formik.values.description}
             onChange={formik.handleChange}
           />
+          <label>Add Character to Campaign:</label>
+          <input
+            type="text"
+            name="characters"
+            value={formik.values.characters}
+            onChange={formik.handleChange}
+          />
+          <label>Active Characters:</label>
+          <input
+            type="text"
+            name="characterslist"
+            value={formik.values.charactersList}
+            readOnly>
+
+            </input>
           <div className="button-group">
             <button type="submit">Update Campaign</button>
             <button type="button" onClick={() => setIsEditMode(false)}>
