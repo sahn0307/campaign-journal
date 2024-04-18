@@ -27,6 +27,7 @@ class User(db.Model):
             raise ValueError("Username must be a string")
         elif len(username) < 2:
             raise ValueError("Username must be at least 2 characters long")
+        return username
     
     @validates("email")
     def validate_email(self, key, email):
