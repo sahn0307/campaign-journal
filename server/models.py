@@ -21,11 +21,19 @@ class User(db.Model):
         "CharacterCampaign", back_populates="gamemaster"
     )
 
-    # serialize_rules = (
-    #     "-characters.user",
-    #     "-character_campaigns",
-    #     "-_password_hash",
-    # )
+    @validates("username")
+    def validate_username(self, _, username):
+        if not isinstance(username, str):
+            raise ValueError("Username must be a string")
+        elif len(username) < 2:
+            raise ValueError("Username must be at least 2 characters long")
+    
+    @validates("email")
+    def validate_email(self, key, email):
+        if not email:
+            raise ValueError("Email cannot be empty")
+        return email
+    
     @hybrid_property
     def password_hash(self):
         raise AttributeError("password_hash is not a readable attribute")
@@ -41,9 +49,7 @@ class User(db.Model):
     def __repr__(self):
         return f"User {self.username}, ID: {self.id}"
 
-    # def get_default_user_id():
-    #     result = db.session.execute(text("SELECT id FROM users LIMIT 1")).first()
-    #     return result[0] if result else None
+
 
 class Character(db.Model):
     __tablename__ = "characters"
@@ -62,6 +68,12 @@ class Character(db.Model):
     character_campaigns = db.relationship("CharacterCampaign", back_populates="character")
     campaigns = association_proxy("character_campaigns", "campaign")
 
+    @validates("name")
+    def validate_name(self, key, name):
+        if not name:
+            raise ValueError("Name cannot be empty")
+        return name
+
 class Campaign(db.Model):
     __tablename__ = "campaigns"
 
@@ -73,6 +85,12 @@ class Campaign(db.Model):
 
     character_campaigns = db.relationship("CharacterCampaign", back_populates="campaign")
     characters = association_proxy("character_campaigns", "character")
+
+    @validates("name")
+    def validate_name(self, key, name):
+        if not name:
+            raise ValueError("Name cannot be empty")
+        return name
 
 class CharacterCampaign(db.Model):
     __tablename__ = "character_campaigns"
