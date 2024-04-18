@@ -45,7 +45,7 @@ const CharacterList = () => {
             console.error('Characters is not an array:', characters);
             return null
         }
-    }, [characters, handleDeleteCharacter]);
+    }, [characters, handleDeleteCharacter, handlePatchCharacter]);
 
     if (!currentPage) {
         return null
