@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-
 # Standard library imports
 from random import randint, choice as rc
 from config import bcrypt
 import random
+
 # Remote library imports
 from faker import Faker
 
@@ -14,15 +14,15 @@ from models import User, Character, Campaign, CharacterCampaign
 
 # if __name__ == '__main__':
 fake = Faker()
-#     from app import app
-#     from models import db
+
+# from app import app
+# from models import db
 with app.app_context():
     print("Starting seed...")
     db.drop_all()
     db.create_all()
 
     # Seed code goes here!
-    # Clear existing data
     # Clear existing data
     User.query.delete()
     Character.query.delete()
@@ -45,10 +45,33 @@ with app.app_context():
 
     # Create Characters
     user_ids = [user.id for user in users]
+    character_classes = ["Warrior", "Mage", "Hunter", "Priest", "Rogue", "Bard"]
+    character_names = [
+        "Aric Shadowbane",
+        "Kaelin Stormbringer",
+        "Eldrin Lightfoot",
+        "Sylas Ironheart",
+        "Mirabel Starfire",
+        "Thalia Moonwhisper",
+        "Caelum Sunward",
+        "Lysander Blackwood",
+        "Rowan Frostfang",
+        "Nyssa Everglade",
+        "Drystan Thundershield",
+        "Azura Windwalker",
+        "Fenris Darkwater",
+        "Idris Flamecaller",
+        "Elowen Silverstream",
+        "Orion Nightbreeze",
+        "Vesper Goldweaver",
+        "Seraphina Brightspear",
+        "Roran Skywarden",
+        "Mira Wildthorn",
+    ]
     characters = [
         Character(
-            name=fake.name(),
-            class_=fake.job(),
+            name=rc(character_names),
+            class_=rc(character_classes),
             race=fake.random_element(elements=("Elf", "Orc", "Human", "Dwarf")),
             alignment=fake.random_element(
                 elements=(
@@ -75,11 +98,30 @@ with app.app_context():
     gamemaster_ids = [user.id for user in users if user.game_master]
     campaigns = [
         Campaign(
-            name=fake.catch_phrase(),
-            description=fake.text(),
+            name="The Quest for the Shattered Crown",
+            description="Embark on a perilous journey to recover the fragments of the ancient Shattered Crown. Unite the pieces to restore balance to the realm.",
             gamemaster_id=rc(gamemaster_ids),
-        )
-        for _ in range(5)
+        ),
+        Campaign(
+            name="Shadows of the Forsaken Tower",
+            description="Investigate the dark secrets lurking within the abandoned Forsaken Tower. Uncover the truth behind the tower's haunted history.",
+            gamemaster_id=rc(gamemaster_ids),
+        ),
+        Campaign(
+            name="The Curse of the Crimson Moon",
+            description="A mysterious curse has befallen the land, turning the moon crimson. Race against time to unravel the curse's origins and save the kingdom.",
+            gamemaster_id=rc(gamemaster_ids),
+        ),
+        Campaign(
+            name="The Lost City of Araknor",
+            description="Explore the ruins of the legendary lost city of Araknor. Discover its hidden treasures and face the ancient guardians that protect them.",
+            gamemaster_id=rc(gamemaster_ids),
+        ),
+        Campaign(
+            name="The Rise of the Necromancer",
+            description="A powerful necromancer threatens to raise an army of the undead. Join forces with brave heroes to stop the necromancer's nefarious plans.",
+            gamemaster_id=rc(gamemaster_ids),
+        ),
     ]
     db.session.add_all(campaigns)
     db.session.commit()
@@ -102,4 +144,5 @@ with app.app_context():
             )
     db.session.add_all(character_campaigns)
     db.session.commit()
+
     print("Seeding Finished...")
